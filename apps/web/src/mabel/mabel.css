@@ -1,0 +1,6176 @@
+/* Mabel UI — clean monochrome chat shell, prompt-kit-inspired.
+ * Tokens via `data-theme` on `.mabel-app-shell`. Typography + spacing unified across surfaces. */
+
+.mabel-app-shell {
+  --mabel-bg: #ffffff;
+  --mabel-surface: #f7f7f8;
+  --mabel-panel: #ffffff;
+  --mabel-border: #e4e4e6;
+  --mabel-border-soft: #ececee;
+  --mabel-border-strong: #cfcfd3;
+  --mabel-text: #0f0f10;
+  --mabel-text-soft: #3a3a3d;
+  --mabel-text-muted: #6b6b70;
+  --mabel-text-faint: #97979c;
+  --mabel-chip: #f1f1f2;
+  --mabel-chip-hover: #e8e8ea;
+  --mabel-user-bubble: #f1f1f3;
+  --mabel-accent: #0f0f10;
+  --mabel-accent-foreground: #ffffff;
+  --mabel-status-ok: #16a34a;
+  --mabel-status-warn: #d97706;
+  --mabel-status-err: #dc2626;
+  --mabel-shadow-card: 0 1px 1px rgba(15, 15, 16, 0.03), 0 1px 2px rgba(15, 15, 16, 0.04);
+  --mabel-shadow-pop: 0 10px 28px rgba(15, 15, 16, 0.1);
+  --mabel-radius-xs: 6px;
+  --mabel-radius-sm: 8px;
+  --mabel-radius-md: 10px;
+  --mabel-radius-lg: 14px;
+  --mabel-radius-xl: 20px;
+  --mabel-font-2xs: 10.5px;
+  --mabel-font-xs: 11.5px;
+  --mabel-font-sm: 12.5px;
+  --mabel-font-md: 13.5px;
+  --mabel-font-body: 14.5px;
+  --mabel-font-title: 17px;
+  --mabel-context-width: 540px;
+
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 256px minmax(0, 1fr);
+  background: var(--mabel-bg);
+  color: var(--mabel-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+  font-size: var(--mabel-font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mabel-app-shell[data-history="closed"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mabel-app-shell[data-context="open"][data-history="open"] {
+  grid-template-columns: 256px minmax(0, 1fr) 0 var(--mabel-context-width);
+}
+
+.mabel-app-shell[data-context="open"][data-history="closed"] {
+  grid-template-columns: minmax(0, 1fr) 0 var(--mabel-context-width);
+}
+
+.mabel-app-shell[data-theme="dark"] {
+  --mabel-bg: #0c0c0e;
+  --mabel-surface: #131316;
+  --mabel-panel: #17171b;
+  --mabel-border: #26262b;
+  --mabel-border-soft: #1f1f24;
+  --mabel-border-strong: #33333a;
+  --mabel-text: #f0f0f1;
+  --mabel-text-soft: #cfcfd4;
+  --mabel-text-muted: #9d9da4;
+  --mabel-text-faint: #717177;
+  --mabel-chip: #1f1f24;
+  --mabel-chip-hover: #26262c;
+  --mabel-user-bubble: #1d1d22;
+  --mabel-accent: #f4f4f5;
+  --mabel-accent-foreground: #0c0c0e;
+  --mabel-status-ok: #4ade80;
+  --mabel-status-warn: #f59e0b;
+  --mabel-status-err: #f87171;
+  --mabel-shadow-card: 0 1px 1px rgba(0, 0, 0, 0.45);
+  --mabel-shadow-pop: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+.mabel-app-shell *,
+.mabel-app-shell *::before,
+.mabel-app-shell *::after {
+  box-sizing: border-box;
+}
+
+.mabel-app-shell.mabel-theme-switching,
+.mabel-app-shell.mabel-theme-switching *,
+.mabel-app-shell.mabel-theme-switching *::before,
+.mabel-app-shell.mabel-theme-switching *::after {
+  transition: none !important;
+}
+
+.mabel-app-shell button,
+.mabel-app-shell input,
+.mabel-app-shell textarea {
+  font-family: inherit;
+}
+
+.mabel-app-shell button {
+  cursor: pointer;
+}
+
+.mabel-app-shell button:focus-visible {
+  outline: 2px solid var(--mabel-border-strong);
+  outline-offset: 2px;
+}
+
+.mabel-app-shell input:focus-visible,
+.mabel-app-shell textarea:focus-visible {
+  outline: none;
+}
+
+/* Left rail */
+.mabel-history-rail {
+  min-height: 0;
+  overflow: auto;
+  background: var(--mabel-surface);
+  border-right: 1px solid var(--mabel-border);
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mabel-app-shell[data-history="closed"] .mabel-history-rail {
+  display: none;
+}
+
+.mabel-history-rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 4px;
+}
+
+.mabel-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.mabel-brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  color: var(--mabel-text);
+  display: block;
+}
+
+.mabel-brand-wordmark {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--mabel-text);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  height: 22px;
+}
+
+.mabel-nav-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 7px 8px;
+  border-radius: var(--mabel-radius-xs);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.mabel-nav-item:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-nav-item--active {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-nav-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-nav-item__icon svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.mabel-nav-item__label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mabel-nav-item--active .mabel-nav-item__icon {
+  color: var(--mabel-text);
+}
+
+.mabel-nav-item__count {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border-soft);
+}
+
+.mabel-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 4px 0;
+}
+
+.mabel-icon-btn__dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--mabel-status-err);
+  border-radius: 999px;
+}
+
+.mabel-icon-btn {
+  position: relative;
+}
+
+.mabel-history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.mabel-rail-label {
+  padding: 6px 6px 2px;
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--mabel-text-faint);
+  text-transform: uppercase;
+}
+
+.mabel-history-item {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 7px 8px;
+  border-radius: var(--mabel-radius-xs);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-sm);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.mabel-history-item:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-history-item-row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--mabel-radius-xs);
+  transition: background 120ms ease;
+}
+
+.mabel-history-item-row:hover,
+.mabel-history-item-row--active,
+.mabel-history-item-row--menu {
+  background: var(--mabel-chip);
+}
+
+.mabel-history-item-row .mabel-history-item {
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--mabel-radius-xs) 0 0 var(--mabel-radius-xs);
+  background: transparent !important;
+  color: var(--mabel-text-soft);
+}
+
+.mabel-history-item-row:hover .mabel-history-item,
+.mabel-history-item-row--active .mabel-history-item,
+.mabel-history-item-row--menu .mabel-history-item {
+  color: var(--mabel-text);
+}
+
+.mabel-history-item__label {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mabel-history-item__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  margin-right: 2px;
+  border: 0;
+  border-radius: 0 var(--mabel-radius-xs) var(--mabel-radius-xs) 0;
+  background: transparent;
+  color: var(--mabel-text-muted);
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.mabel-history-item-row:hover .mabel-history-item__menu-btn,
+.mabel-history-item-row--menu .mabel-history-item__menu-btn,
+.mabel-history-item-row--active .mabel-history-item__menu-btn {
+  opacity: 1;
+}
+
+.mabel-history-item__menu-btn:hover {
+  color: var(--mabel-text);
+}
+
+.mabel-history-item__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10;
+  min-width: 140px;
+  background: var(--mabel-panel);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-sm);
+  box-shadow: var(--mabel-shadow-pop);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mabel-history-item__menu-item {
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 6px 8px;
+  border-radius: var(--mabel-radius-xs);
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-history-item__menu-item:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-history-item__menu-item--danger {
+  color: var(--mabel-status-err);
+}
+
+.mabel-history-item-row--loading .mabel-history-item {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.85;
+}
+
+.mabel-history-item__spinner {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  border: 2px solid var(--mabel-text-faint);
+  border-top-color: var(--mabel-text);
+  border-radius: 50%;
+  animation: mabel-history-spin 0.7s linear infinite;
+}
+
+@keyframes mabel-history-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mabel-conversation-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 24px;
+}
+
+.mabel-conversation-loading__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-md);
+}
+
+.mabel-setup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--mabel-bg) 72%, transparent);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+
+.mabel-setup-overlay__card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: var(--mabel-radius-md);
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-md);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--mabel-text) 8%, transparent);
+}
+
+.mabel-history-item__input {
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid var(--mabel-border-strong);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-empty-copy {
+  margin: 0;
+  padding: 4px 8px;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+}
+
+/* Center column */
+.mabel-conversation-shell {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--mabel-bg);
+}
+
+.mabel-chat-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+.mabel-topbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mabel-topbar-title h1 {
+  margin: 0;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-topbar-meta {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mabel-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--mabel-text-soft);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.mabel-icon-btn:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-icon-btn--active {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+  border-color: var(--mabel-border);
+}
+
+.mabel-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Message thread */
+.mabel-message-list {
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow: auto;
+  /* Auto-scroll pins this list to the bottom during streaming; keep the
+     browser's own scroll anchoring from fighting those writes. */
+  overflow-anchor: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 20px 8px;
+}
+
+.mabel-thread {
+  width: 100%;
+  min-width: 0;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mabel-message {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+}
+
+.mabel-message--user {
+  justify-content: flex-end;
+}
+
+.mabel-message--assistant,
+.mabel-message--system {
+  justify-content: flex-start;
+}
+
+.mabel-message-body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mabel-message--user .mabel-message-body {
+  max-width: 75%;
+}
+
+.mabel-message--assistant .mabel-message-body,
+.mabel-message--system .mabel-message-body {
+  width: 100%;
+}
+
+.mabel-message-bubble {
+  font-size: var(--mabel-font-body);
+  line-height: 1.6;
+  color: var(--mabel-text);
+  overflow-wrap: anywhere;
+}
+
+/* `white-space: pre-wrap` is ONLY for user-typed plain text — it preserves
+ * the newlines the user wrote. Assistant bubbles render structured markdown,
+ * where pre-wrap turns the whitespace text nodes between adjacent React
+ * elements (<p> + <ul>) into visible vertical gaps. That's exactly what
+ * caused the "huge spacing between Forecast: and the list" bug. */
+.mabel-message--user .mabel-message-bubble {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--mabel-user-bubble);
+  border: 1px solid var(--mabel-border);
+  border-radius: 16px;
+  padding: 8px 13px;
+  font-size: var(--mabel-font-md);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.mabel-message--assistant .mabel-message-bubble,
+.mabel-message--system .mabel-message-bubble {
+  white-space: normal;
+}
+
+.mabel-message--system .mabel-message-bubble {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  font-style: italic;
+}
+
+.mabel-message-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  margin-left: 2px;
+  background: var(--mabel-text-muted);
+  vertical-align: -2px;
+  animation: mabel-blink 1s steps(2, start) infinite;
+}
+
+/* Thinking loader — prompt-kit text-shimmer + pulse-dot. Shown in the empty
+ * assistant bubble while the model is reasoning before any tokens arrive. */
+.mabel-message-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: var(--mabel-font-md);
+  line-height: 1.4;
+}
+
+.mabel-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--mabel-text-faint) 0%,
+    var(--mabel-text-faint) 35%,
+    var(--mabel-text) 50%,
+    var(--mabel-text-faint) 65%,
+    var(--mabel-text-faint) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 500;
+  animation: mabel-shimmer 2s linear infinite;
+}
+
+@keyframes mabel-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+
+.mabel-message__actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.mabel-message:hover .mabel-message__actions,
+.mabel-message:focus-within .mabel-message__actions {
+  opacity: 1;
+}
+
+.mabel-message__action {
+  background: transparent;
+  border: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mabel-text-muted);
+  border-radius: var(--mabel-radius-xs);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.mabel-message__action:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-message__action--done {
+  color: var(--mabel-status-ok);
+}
+
+/* Per-message attachments — chips below the bubble, inline images stack. */
+.mabel-message__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+/* User-side: stack chip ABOVE the bubble flush-right, matching ChatGPT.
+ * Each chip is its own row so multiple chips don't sprawl horizontally. */
+.mabel-message__attachments--user {
+  justify-content: flex-end;
+  margin: 0 0 6px;
+}
+
+.mabel-message__attachments--assistant {
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+/* Right-align the user message body so the chip + bubble form a clean
+ * right-edge column. Without this, the body container left-aligns inside
+ * the row and the chip/bubble end at different x coordinates. */
+.mabel-message--user .mabel-message-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Compact ChatGPT-style file chip: slim height (~28-30px), small icon, tight
+ * padding. Visually embeds with the bubble rather than dominating it.
+ * Applies equally to <a>, <span>, AND <button> renderings — the agent-side
+ * chip is a button (JS download), the user-side is a span (static). */
+.mabel-message__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-surface);
+  border-radius: 10px;
+  font-size: var(--mabel-font-xs);
+  line-height: 1.2;
+  color: var(--mabel-text);
+  text-decoration: none;
+  max-width: min(260px, 100%);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+button.mabel-message__chip:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+span.mabel-message__chip {
+  cursor: default;
+}
+
+.mabel-message__chip:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border-strong);
+}
+
+.mabel-message__chip-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--mabel-text-muted);
+  flex-shrink: 0;
+}
+
+.mabel-message__chip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(180px, 100%);
+  font-weight: 500;
+}
+
+.mabel-message__chip-meta {
+  color: var(--mabel-text-faint);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.mabel-message__chip-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mabel-text-muted);
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 2px 4px;
+  border-left: 1px solid var(--mabel-border);
+  border-radius: 0 var(--mabel-radius-xs) var(--mabel-radius-xs) 0;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.mabel-message__chip-download:hover {
+  color: var(--mabel-text);
+  background: var(--mabel-chip);
+}
+
+/* Sources card — single bordered container with a header strip + chips
+ * row, matching the prompt-kit / ChatGPT layout. */
+.mabel-sources {
+  margin: 10px 0 4px;
+  padding: 8px 10px 10px;
+  background: var(--mabel-surface);
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-sources__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+  font-weight: 500;
+}
+
+.mabel-sources__count {
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 10.5px;
+  color: var(--mabel-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mabel-sources__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+}
+
+.mabel-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--mabel-bg);
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  text-decoration: none;
+  color: var(--mabel-text);
+  min-width: 0;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.mabel-source:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border);
+}
+
+.mabel-source--provider {
+  cursor: default;
+}
+
+.mabel-source__favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex: 0 0 auto;
+  background: var(--mabel-chip);
+  object-fit: contain;
+}
+
+.mabel-source__favicon--provider {
+  background:
+    radial-gradient(circle at 65% 35%, #ffffff 0 18%, transparent 20%),
+    linear-gradient(135deg, #42a5f5, #1662d4);
+}
+
+.mabel-source__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mabel-source__title {
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  color: var(--mabel-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.mabel-source__host {
+  font-size: 11.5px;
+  color: var(--mabel-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Inline image previews — sized for thread readability, click for full size. */
+.mabel-message__image {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 360px;
+  max-height: 360px;
+  border-radius: var(--mabel-radius-md);
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-surface);
+  overflow: hidden;
+  line-height: 0;
+  padding: 0;
+  color: var(--mabel-text-muted);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mabel-message__image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+  background: var(--mabel-surface);
+}
+
+.mabel-message__image:hover {
+  border-color: var(--mabel-border-strong);
+}
+
+.mabel-message__image:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.mabel-message__image-loading {
+  padding: 18px;
+  font-size: var(--mabel-font-xs);
+  line-height: 1.2;
+}
+
+/* Markdown — tight prompt-kit Message density. Aggressively flattens the
+ * spacing GPT-5.5 emits when it writes "loose" markdown (blank lines between
+ * every bullet, nested sub-lists with paragraphs, big-gap H3 sections). */
+.mabel-markdown {
+  font-size: var(--mabel-font-body);
+  line-height: 1.5;
+  color: var(--mabel-text);
+}
+
+.mabel-markdown > :first-child {
+  margin-top: 0;
+}
+
+.mabel-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* Inter-block spacing tuned for chat readability: ~8px between paragraphs
+ * (matches ChatGPT/Claude density), with a slightly tighter transition into
+ * a list (~6px) so the list visually continues the introducing paragraph,
+ * and a clean ~8px coming back out of a list. */
+.mabel-markdown p {
+  margin: 0 0 8px;
+}
+
+/* Safety net: any empty paragraph or paragraph that contains only a <br>
+ * collapses to zero height. The Markdown component already strips runs of
+ * 3+ newlines, but this catches edge cases (e.g. sanitizer leftovers). */
+.mabel-markdown p:empty,
+.mabel-markdown p > br:only-child {
+  display: none;
+}
+
+/* Paragraph → list: pull the list up slightly so it feels attached to its
+ * introducing sentence ("Here are 5..." → bullets) without dropping all
+ * the way to zero gap. */
+.mabel-markdown p + ul,
+.mabel-markdown p + ol {
+  margin-top: -2px;
+}
+
+/* List → paragraph: standard breath between the list and the next prose
+ * block. The list's own margin-bottom (8px) already provides this. */
+.mabel-markdown ul + p,
+.mabel-markdown ol + p {
+  margin-top: 0;
+}
+
+/* Headings — small, tight. Mid-message section headings (h3/h4) should
+ * feel like inline section labels, not a separator. */
+.mabel-markdown h1,
+.mabel-markdown h2,
+.mabel-markdown h3,
+.mabel-markdown h4,
+.mabel-markdown h5,
+.mabel-markdown h6 {
+  margin: 6px 0 1px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--mabel-text);
+}
+
+.mabel-markdown > :first-child:is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0;
+}
+
+/* Heading immediately followed by another block — collapse the in-between
+ * gap entirely so list items / paragraphs hug their heading. */
+.mabel-markdown :is(h1, h2, h3, h4, h5, h6) + p,
+.mabel-markdown :is(h1, h2, h3, h4, h5, h6) + ul,
+.mabel-markdown :is(h1, h2, h3, h4, h5, h6) + ol,
+.mabel-markdown :is(h1, h2, h3, h4, h5, h6) + pre,
+.mabel-markdown :is(h1, h2, h3, h4, h5, h6) + .mabel-code {
+  margin-top: 0;
+}
+
+.mabel-markdown h1 { font-size: 16px; }
+.mabel-markdown h2 { font-size: 14.5px; }
+.mabel-markdown h3 { font-size: 13.5px; }
+.mabel-markdown h4 { font-size: 13px; }
+.mabel-markdown h5,
+.mabel-markdown h6 { font-size: 12.5px; color: var(--mabel-text-soft); }
+
+/* Lists — single source of truth. All rules use the .mabel-markdown scope
+ * with !important to win against Tailwind preflight + any conflicting earlier
+ * declarations. The goal: items hug each other tight regardless of whether
+ * the model emitted a tight list (\n- foo\n- bar) or a loose list with
+ * blank lines (\n\n- foo\n\n- bar). */
+.mabel-markdown ul {
+  list-style: disc outside !important;
+  margin: 0 0 8px !important;
+  padding-left: 22px !important;
+}
+
+.mabel-markdown ol {
+  list-style: decimal outside !important;
+  margin: 0 0 8px !important;
+  padding-left: 24px !important;
+}
+
+/* Nested lists keep their own indent — padding-left is inherited from the
+ * .mabel-markdown ul/ol rules above. Marker shapes step down by depth so
+ * the hierarchy is visually obvious (filled disc → open circle → square). */
+.mabel-markdown ul ul { list-style: circle outside !important; }
+.mabel-markdown ul ul ul { list-style: square outside !important; }
+
+/* Bump nested-list indent slightly so the inner marker column lands
+ * clearly inboard of the outer text column — without this the open-circle
+ * sub-bullets visually sit in the same column as their parent's filled
+ * dots. (ChatGPT/Claude both use ~16-20px of additional indent per level.) */
+.mabel-markdown ul ul,
+.mabel-markdown ol ol,
+.mabel-markdown ul ol,
+.mabel-markdown ol ul {
+  padding-left: 22px !important;
+}
+
+.mabel-markdown li {
+  margin: 0 !important;
+  padding: 0 !important;
+  /* 1.4 = ~20px per line at 14px body; matches prompt-kit's compact density. */
+  line-height: 1.4 !important;
+  display: list-item;
+}
+
+.mabel-markdown li + li {
+  margin-top: 3px !important;
+}
+
+/* Flatten loose-list paragraph wrappers so blank-line-separated items
+ * render visually identical to tight items. We intentionally DO NOT touch
+ * padding on nested <ul>/<ol> — they need their own padding-left to indent. */
+.mabel-markdown li > p,
+.mabel-markdown li > pre,
+.mabel-markdown li > blockquote,
+.mabel-markdown li > div {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Nested lists: zero side padding gets inherited from the rule above when
+ * we don't list them — so we explicitly keep margin zero (no surrounding
+ * gap) but leave the 22px padding-left rule from the nested-ul/ol block
+ * alone. */
+.mabel-markdown li > ul,
+.mabel-markdown li > ol {
+  margin: 2px 0 0 !important;
+}
+
+.mabel-markdown li > * + * {
+  margin-top: 2px !important;
+}
+
+.mabel-markdown li::marker {
+  color: var(--mabel-text-muted);
+  font-size: 0.95em;
+}
+
+.mabel-markdown a {
+  color: var(--mabel-text);
+  text-decoration: underline;
+  text-decoration-color: var(--mabel-border-strong);
+  text-underline-offset: 2px;
+}
+
+.mabel-markdown a:hover {
+  text-decoration-color: var(--mabel-text);
+}
+
+.mabel-markdown blockquote {
+  margin: 6px 0;
+  padding: 2px 10px;
+  border-left: 2px solid var(--mabel-border);
+  color: var(--mabel-text-soft);
+}
+
+/* Inline backticks only — fenced blocks use .mabel-code and must not inherit
+   this “pill” chrome (Prism renders an inner <code> that would look nested). */
+.mabel-markdown-inline-code {
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.mabel-markdown hr {
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--mabel-border-soft);
+}
+
+.mabel-markdown strong { font-weight: 600; }
+.mabel-markdown em { font-style: italic; }
+
+.mabel-markdown table {
+  display: block;
+  width: max-content;
+  min-width: min(760px, 100%);
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 4px 0 8px;
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-markdown th,
+.mabel-markdown td {
+  border: 1px solid var(--mabel-border);
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.mabel-markdown th {
+  background: var(--mabel-chip);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mabel-markdown td {
+  max-width: 360px;
+  overflow-wrap: break-word;
+}
+
+.mabel-markdown li > .mabel-code.mabel-code--promptkit,
+.mabel-markdown td .mabel-code.mabel-code--promptkit {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  margin: 0 2px;
+  vertical-align: middle;
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+.mabel-markdown li > .mabel-code.mabel-code--promptkit .mabel-code__group,
+.mabel-markdown td .mabel-code.mabel-code--promptkit .mabel-code__group {
+  display: none;
+}
+
+.mabel-markdown li > .mabel-code.mabel-code--promptkit .mabel-code__body,
+.mabel-markdown td .mabel-code.mabel-code--promptkit .mabel-code__body {
+  padding: 1px 6px;
+  overflow: visible;
+}
+
+.mabel-markdown li > .mabel-code.mabel-code--promptkit .mabel-code__pre,
+.mabel-markdown td .mabel-code.mabel-code--promptkit .mabel-code__pre {
+  font-size: 12.5px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Prompt Kit–aligned fenced code: Shiki (github-light/dark) + single-shell card */
+.mabel-code.mabel-code--promptkit {
+  margin: 10px 0;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--mabel-border);
+  border-radius: 12px;
+  background: var(--mabel-bg);
+  box-shadow: var(--mabel-shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mabel-code__group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 0;
+  padding: 4px 8px 4px 10px;
+  border-bottom: 1px solid var(--mabel-border-soft);
+  background: var(--mabel-surface);
+  flex-shrink: 0;
+}
+
+.mabel-code__badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--mabel-font-2xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--mabel-text-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--mabel-border-soft);
+  background: var(--mabel-chip);
+  font-family: inherit;
+  line-height: 1.35;
+}
+
+.mabel-code__actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.mabel-code__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--mabel-radius-xs);
+  background: transparent;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-code__icon-btn:hover {
+  background: var(--mabel-chip-hover);
+  color: var(--mabel-text);
+}
+
+/* One continuous content area under the toolbar — no nested bordered box */
+.mabel-code__body {
+  margin: 0;
+  padding: 8px 12px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow-x: auto;
+  min-height: 0;
+}
+
+.mabel-code__pre {
+  margin: 0;
+  padding: 0;
+  overflow-x: visible;
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", "Fira Code", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--mabel-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+  background: transparent;
+  border: 0;
+}
+
+.mabel-code__pre--skeleton {
+  opacity: 0.55;
+}
+
+.mabel-code__shiki {
+  width: 100%;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Padding lives on `.mabel-code__body`; Shiki `pre` is flush inside */
+.mabel-code__shiki :is(pre, pre.shiki) {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.mabel-markdown-pre {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: visible;
+}
+
+@keyframes mabel-blink {
+  to { visibility: hidden; }
+}
+
+/* Tool call card — prompt-kit "Tool" aesthetic. White by default, soft chip
+ * gray on hover, always clickable to expand, single colored state pill. */
+.mabel-tool-card {
+  width: 100%;
+  background: var(--mabel-bg);
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-md);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.mabel-tool-card:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border);
+}
+
+.mabel-tool-card__header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mabel-tool-card__name {
+  flex: 1 1 auto;
+  font-weight: 500;
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  color: var(--mabel-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bubble pill state badge — matches prompt-kit Tool. */
+.mabel-tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 2px 8px 2px 6px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  font-family: var(--mabel-font-family, inherit);
+}
+
+.mabel-tool-pill__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mabel-tool-pill--running {
+  background: rgba(59, 130, 246, 0.10);
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.22);
+}
+
+.mabel-tool-pill--running .mabel-tool-pill__icon {
+  animation: mabel-tool-spin 1s linear infinite;
+}
+
+.mabel-tool-pill--completed {
+  background: rgba(22, 163, 74, 0.10);
+  color: #15803d;
+  border-color: rgba(22, 163, 74, 0.22);
+}
+
+.mabel-tool-pill--approval {
+  background: rgba(234, 179, 8, 0.14);
+  color: #a16207;
+  border-color: rgba(234, 179, 8, 0.30);
+}
+
+.mabel-tool-pill--error {
+  background: rgba(220, 38, 38, 0.10);
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.24);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-tool-pill--running {
+  background: rgba(96, 165, 250, 0.14);
+  color: #93c5fd;
+  border-color: rgba(96, 165, 250, 0.30);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-tool-pill--completed {
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.30);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-tool-pill--approval {
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde68a;
+  border-color: rgba(250, 204, 21, 0.36);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-tool-pill--error {
+  background: rgba(248, 113, 113, 0.14);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+@keyframes mabel-tool-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mabel-tool-card__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mabel-text-faint);
+  transition: transform 160ms ease;
+  flex: 0 0 auto;
+}
+
+.mabel-tool-card__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Prompt-kit Steps body: a vertical left-rail connector with the input/output
+ * rows hanging off it. No more gray Input/Output boxes — the data itself is
+ * the content. */
+.mabel-tool-card__body {
+  border-top: 1px solid var(--mabel-border-soft);
+  padding: 10px 14px 12px 22px;
+  background: var(--mabel-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 12px;
+}
+
+.mabel-tool-card:hover .mabel-tool-card__body {
+  background: var(--mabel-bg);
+}
+
+/* Vertical Steps connector (prompt-kit style) — a faint border that runs
+ * the full height of the body, with each section's label/value dot-aligned
+ * to it. */
+.mabel-tool-card__body::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--mabel-border-soft);
+}
+
+.mabel-tool-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+
+.mabel-tool-card__section + .mabel-tool-card__section {
+  margin-top: 10px;
+}
+
+/* Each section gets a small marker dot on the left rail so the body
+ * looks like a vertical Steps timeline. */
+.mabel-tool-card__section::before {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mabel-bg);
+  border: 1.5px solid var(--mabel-border);
+}
+
+.mabel-tool-card__section-label {
+  font-size: 10.5px;
+  color: var(--mabel-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Key/value rendering for shallow object payloads (the prompt-kit look). */
+/* Input/output values render as plain monospace lines hanging off the
+ * Steps rail — no gray boxes, no borders. Same visual density as the
+ * prompt-kit Steps preview screenshot. */
+.mabel-tool-card__kv {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--mabel-text);
+}
+
+.mabel-tool-card__kv-row {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.mabel-tool-card__kv-key {
+  color: var(--mabel-text-muted);
+  flex: 0 0 auto;
+}
+
+.mabel-tool-card__kv-val {
+  color: var(--mabel-text);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.mabel-tool-card__pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--mabel-text);
+  padding: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 280px;
+}
+
+.mabel-tool-card__empty {
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-faint);
+  font-style: italic;
+}
+
+/* Stack of tool cards from the same turn — tight spacing reads as one block. */
+.mabel-tool-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+/* ---------------------------------------------------------------------
+ * Inline Steps timeline — rendered above each assistant message.
+ *
+ * Communicates what the agent actually did (search, read, run code) in
+ * natural language, prompt-kit Steps style. Each block is a bordered
+ * container with a title row and an expandable body of sub-rows + sources.
+ *
+ * Visual reference: https://www.prompt-kit.com/docs/steps
+ * ------------------------------------------------------------------- */
+.mabel-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+/* The block itself is transparent — no gray box. Just a faint outer
+ * border (still optional) so the title row reads as a clickable region.
+ * Removing it entirely makes the whole block invisible to the eye
+ * outside hover; keeping it makes the click target discoverable. */
+.mabel-steps {
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-md);
+  background: transparent;
+  overflow: hidden;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+/* Hover the whole block (head OR body) and you get a subtle gray. That's
+ * the only visual emphasis — no permanent background. */
+.mabel-steps:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-steps__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 0;
+  color: var(--mabel-text);
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.mabel-steps__head:disabled {
+  cursor: default;
+}
+
+.mabel-steps__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-steps__indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mabel-text-faint);
+  flex: 0 0 auto;
+}
+
+.mabel-steps__spinner {
+  animation: mabel-tool-spin 1s linear infinite;
+  color: var(--mabel-text-muted);
+}
+
+/* Body: no separator border, no inner background. Just the indented sub
+ * lines hanging under the title — same density as the prompt-kit Steps
+ * preview screenshot. */
+.mabel-steps__body {
+  padding: 0 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+}
+
+.mabel-steps__row {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mabel-text-muted);
+  padding: 2px 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.mabel-steps__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.mabel-steps__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 6px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--mabel-text);
+  text-decoration: none;
+  max-width: 220px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.mabel-steps__source:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border-strong);
+}
+
+.mabel-steps__source--provider {
+  cursor: default;
+}
+
+.mabel-steps__provider-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 65% 35%, #ffffff 0 18%, transparent 20%),
+    linear-gradient(135deg, #42a5f5, #1662d4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  flex: 0 0 auto;
+}
+
+.mabel-steps__favicon {
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.mabel-steps__source-host {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mabel-text-muted);
+}
+
+/* Welcome / empty state */
+.mabel-welcome {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 12px 0 24px;
+}
+
+.mabel-welcome__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 4px;
+}
+
+.mabel-welcome__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mabel-text);
+}
+
+.mabel-welcome__sub {
+  margin: 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-md);
+}
+
+.mabel-welcome__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mabel-stat {
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-stat__value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mabel-stat__label {
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  color: var(--mabel-text-soft);
+}
+
+.mabel-stat__hint {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+}
+
+.mabel-welcome__section-label {
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--mabel-text-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.mabel-welcome__starter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mabel-welcome__starter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  border-radius: var(--mabel-radius-md);
+  font-size: var(--mabel-font-sm);
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.mabel-welcome__starter:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border-strong);
+}
+
+.mabel-welcome__starter--featured {
+  background: var(--mabel-text);
+  border-color: var(--mabel-text);
+  color: var(--mabel-panel);
+  box-shadow: none;
+}
+
+.mabel-welcome__starter--featured:hover {
+  background: var(--mabel-text);
+  border-color: var(--mabel-text);
+  color: var(--mabel-panel);
+}
+
+.mabel-welcome__game {
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-welcome__game-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mabel-welcome__game-sub {
+  margin: 0;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-welcome__game-toggle {
+  padding: 6px 12px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+}
+
+.mabel-welcome__game-toggle:hover {
+  background: var(--mabel-chip);
+}
+
+/* Snake game */
+.mabel-snake {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.mabel-snake__board {
+  display: grid;
+  grid-template-columns: repeat(16, 14px);
+  grid-template-rows: repeat(16, 14px);
+  gap: 1px;
+  background: var(--mabel-border);
+  padding: 1px;
+  border-radius: 6px;
+  outline: none;
+}
+
+.mabel-snake__board:focus,
+.mabel-snake__board:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--mabel-border-strong);
+}
+
+.mabel-snake__cell {
+  background: var(--mabel-surface);
+  border-radius: 2px;
+}
+
+.mabel-snake__cell--food {
+  background: var(--mabel-accent);
+}
+
+.mabel-snake__cell--body {
+  background: var(--mabel-text-muted);
+}
+
+.mabel-snake__cell--head {
+  background: var(--mabel-text);
+}
+
+.mabel-snake__side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-snake__score {
+  font-weight: 600;
+  font-size: var(--mabel-font-md);
+}
+
+.mabel-snake__tip {
+  margin: 0;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-snake__hint {
+  margin: 0;
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-text-faint);
+}
+
+.mabel-snake__reset {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--mabel-accent);
+  color: var(--mabel-accent-foreground);
+  border: 0;
+  font-size: var(--mabel-font-xs);
+  font-weight: 500;
+}
+
+/* Composer */
+.mabel-composer-dock {
+  padding: 8px 16px 14px;
+  background: var(--mabel-bg);
+}
+
+.mabel-composer {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--mabel-panel);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-lg);
+  padding: 8px 10px 8px 12px;
+  box-shadow: var(--mabel-shadow-card);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  position: relative;
+}
+
+.mabel-composer:focus-within {
+  border-color: var(--mabel-text-faint);
+  box-shadow: 0 0 0 3px var(--mabel-chip), 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.mabel-composer textarea {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text);
+  outline: none;
+  resize: none;
+  padding: 6px 0;
+  font-family: inherit;
+  font-size: var(--mabel-font-body);
+  line-height: 1.5;
+  min-height: 24px;
+  max-height: 200px;
+}
+
+.mabel-composer textarea::placeholder {
+  color: var(--mabel-text-faint);
+}
+
+.mabel-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.mabel-composer-actions__left,
+.mabel-composer-actions__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mabel-composer-hint {
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-text-faint);
+}
+
+.mabel-composer-connectors {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Collapsed: single icon — expands to split strip (engage | chevron) */
+.mabel-composer-connectors__control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  border: 1px solid transparent;
+  border-radius: var(--mabel-radius-xs);
+  background: transparent;
+  color: var(--mabel-text-soft);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.mabel-composer-connectors__control--collapsed:hover:not(:disabled) {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+  border-color: transparent;
+}
+
+.mabel-composer-connectors__control:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mabel-composer-connectors__control:focus-visible {
+  outline: 2px solid var(--mabel-accent);
+  outline-offset: 1px;
+}
+
+/* Revealed: pill shell with left = hide strip, separator, right = MCP list */
+.mabel-composer-connectors__shell {
+  display: inline-flex;
+  align-items: stretch;
+  height: 28px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text-soft);
+  overflow: hidden;
+}
+
+.mabel-composer-connectors__shell--revealed {
+  border-color: var(--mabel-status-ok);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mabel-status-ok) 28%, transparent);
+  color: var(--mabel-status-ok);
+}
+
+.mabel-composer-connectors__shell--revealed.mabel-composer-connectors__shell--open {
+  background: var(--mabel-chip);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mabel-status-ok) 38%, transparent);
+}
+
+.mabel-composer-connectors__engage {
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 5px;
+  padding: 0 5px 0 8px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  color: inherit;
+  box-sizing: border-box;
+  transition: background 120ms ease;
+}
+
+.mabel-composer-connectors__engage:hover:not(:disabled) {
+  background: var(--mabel-chip);
+}
+
+.mabel-composer-connectors__engage:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mabel-composer-connectors__split {
+  align-self: stretch;
+  width: 1px;
+  min-height: 0;
+  margin: 0;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--mabel-status-ok) 35%, var(--mabel-border));
+  opacity: 0.95;
+}
+
+.mabel-composer-connectors__dropdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  box-sizing: border-box;
+  transition: background 120ms ease;
+}
+
+.mabel-composer-connectors__dropdown:hover:not(:disabled) {
+  background: var(--mabel-chip);
+}
+
+.mabel-composer-connectors__dropdown:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mabel-composer-connectors__engage:focus-visible,
+.mabel-composer-connectors__dropdown:focus-visible {
+  outline: 2px solid var(--mabel-accent);
+  outline-offset: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.mabel-composer-connectors__control-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.mabel-composer-connectors__control-icon svg {
+  display: block;
+}
+
+.mabel-composer-connectors__control-label {
+  font-size: var(--mabel-font-xs);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.mabel-composer-connectors__control-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: -1px;
+  opacity: 0.75;
+  color: inherit;
+}
+
+.mabel-composer-connectors__control-chevron svg {
+  display: block;
+  transition: transform 160ms ease;
+}
+
+.mabel-composer-connectors__control-chevron--open svg {
+  transform: rotate(180deg);
+}
+
+.mabel-composer-connectors__menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: min(200px, calc(100vw - 28px));
+  max-height: min(220px, 34vh);
+  overflow: auto;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-lg);
+  background: var(--mabel-panel);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--mabel-border) 55%, transparent),
+    0 4px 16px rgba(15, 15, 16, 0.06),
+    0 10px 28px rgba(15, 15, 16, 0.05);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-composer-connectors__menu {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 6px 18px rgba(0, 0, 0, 0.32),
+    0 14px 36px rgba(0, 0, 0, 0.38);
+}
+
+.mabel-composer-connectors__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  align-self: stretch;
+  min-width: 0;
+  margin: 1px 2px;
+  padding: 4px 7px 4px 9px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 999px;
+  color: var(--mabel-text);
+  background: transparent;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.mabel-composer-connectors__row:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-composer-connectors__row--locked,
+.mabel-composer-connectors__row--locked:hover {
+  cursor: default;
+  background: transparent;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-composer-connectors__name {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: var(--mabel-font-xs);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  color: var(--mabel-text);
+}
+
+/* Compact pill switch */
+.mabel-composer-connectors__switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mabel-border);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mabel-border-strong) 35%, transparent);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.mabel-composer-connectors__switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--mabel-panel);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.mabel-composer-connectors__switch[aria-checked="true"] {
+  background: var(--mabel-status-ok);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-composer-connectors__switch[aria-checked="true"] {
+  background: color-mix(in srgb, var(--mabel-status-ok) 82%, #0c0c0e);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.mabel-composer-connectors__switch[aria-checked="true"]::after {
+  transform: translateX(14px); /* 32 - 2 - 14 - 2 */
+}
+
+.mabel-composer-connectors__switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--mabel-status-ok) 55%, var(--mabel-accent));
+  outline-offset: 2px;
+}
+
+.mabel-composer-connectors__switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mabel-composer-connectors__error,
+.mabel-composer-connectors__empty {
+  margin: 2px 4px 4px;
+  padding: 4px 6px;
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-status-err);
+  border-radius: var(--mabel-radius-sm);
+}
+
+.mabel-composer-connectors__empty {
+  color: var(--mabel-text-muted);
+}
+
+.mabel-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-accent);
+  color: var(--mabel-accent-foreground);
+  border: 0;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.mabel-send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mabel-send-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mabel-send-btn--stop {
+  background: var(--mabel-status-err);
+}
+
+.mabel-composer-footnote {
+  margin: 8px auto 0;
+  width: 100%;
+  max-width: 760px;
+  text-align: center;
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-text-faint);
+}
+
+.mabel-composer__context {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--mabel-border);
+  border-radius: 999px;
+  background: var(--mabel-surface);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-composer__context strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mabel-text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-composer__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mabel-composer__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 8px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border);
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-soft);
+}
+
+.mabel-composer__chip-x {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.mabel-composer__chip-x:hover {
+  background: var(--mabel-chip-hover);
+  color: var(--mabel-text);
+}
+
+.mabel-composer__chip--uploading {
+  border-style: dashed;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-composer__chip--error {
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #b91c1c;
+}
+
+.mabel-app-shell[data-theme="dark"] .mabel-composer__chip--error {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.mabel-composer__chip-status {
+  font-size: 10.5px;
+  color: var(--mabel-text-muted);
+  font-style: italic;
+}
+
+.mabel-composer__chip-status--error {
+  color: #b91c1c;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.mabel-composer__chip-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--mabel-border);
+  border-top-color: var(--mabel-text);
+  border-radius: 999px;
+  animation: mabel-spin 0.7s linear infinite;
+}
+
+@keyframes mabel-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mabel-composer__menu {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 8px);
+  background: var(--mabel-panel);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  box-shadow: var(--mabel-shadow-pop);
+  max-height: 240px;
+  overflow: auto;
+  padding: 4px;
+  z-index: 5;
+}
+
+.mabel-composer__menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--mabel-radius-xs);
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text);
+  text-align: left;
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-composer__menu-item:hover,
+.mabel-composer__menu-item:focus-visible {
+  background: var(--mabel-chip);
+}
+
+.mabel-composer__menu-label {
+  font-weight: 500;
+}
+
+.mabel-composer__menu-hint {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+/* Right context rail */
+.mabel-context-rail {
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid var(--mabel-border);
+  background: var(--mabel-surface);
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  position: relative;
+}
+
+.mabel-context-resizer {
+  display: none;
+  width: 0;
+  cursor: col-resize;
+  position: relative;
+  background: transparent;
+  overflow: visible;
+  z-index: 3;
+}
+
+.mabel-app-shell[data-context="open"] .mabel-context-resizer {
+  display: block;
+}
+
+.mabel-context-resizer::before {
+  content: none;
+}
+
+.mabel-context-resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  width: 8px;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.mabel-context-resizer:hover::after {
+  background: rgba(15, 15, 16, 0.08);
+}
+
+.mabel-app-shell[data-resizing="true"] {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.mabel-app-shell[data-context="open"] .mabel-context-rail {
+  display: flex;
+}
+
+.mabel-context-rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+.mabel-context-rail__title {
+  margin: 0;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+}
+
+/* Drawer (tabs + content) */
+.mabel-drawer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.mabel-drawer__tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+.mabel-drawer__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 6px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+}
+
+.mabel-drawer__tab:hover {
+  color: var(--mabel-text);
+}
+
+.mabel-drawer__tab--active {
+  color: var(--mabel-text);
+  border-bottom-color: var(--mabel-accent);
+}
+
+.mabel-drawer__count {
+  font-size: var(--mabel-font-2xs);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  color: var(--mabel-text-muted);
+  font-weight: 500;
+}
+
+.mabel-drawer__content {
+  padding: 12px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.mabel-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mabel-tab__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mabel-tab__title {
+  margin: 0;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+}
+
+.mabel-tab__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-tab__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-tab__row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mabel-tab__row-main strong {
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+  color: var(--mabel-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.mabel-tab__meta {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-tab__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mabel-tab__sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  border-top: 1px solid var(--mabel-border-soft);
+  padding-top: 8px;
+}
+
+.mabel-tab__sublist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-tab__sublist-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  background: var(--mabel-surface);
+  border-radius: var(--mabel-radius-xs);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-tab__sublist-item strong {
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  color: var(--mabel-text);
+}
+
+.mabel-tab__sublist-item span {
+  display: block;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+  grid-column: 1 / -1;
+}
+
+.mabel-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--mabel-text-faint);
+}
+
+.mabel-status-dot--ok {
+  background: var(--mabel-status-ok);
+}
+
+.mabel-status-dot--warn {
+  background: var(--mabel-status-warn);
+}
+
+.mabel-status-dot--err {
+  background: var(--mabel-status-err);
+}
+
+.mabel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid var(--mabel-accent);
+  background: var(--mabel-accent);
+  color: var(--mabel-accent-foreground);
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: opacity 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.mabel-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.mabel-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mabel-button--ghost {
+  background: transparent;
+  color: var(--mabel-text);
+  border-color: var(--mabel-border);
+}
+
+.mabel-button--ghost:hover:not(:disabled) {
+  background: var(--mabel-chip);
+}
+
+.mabel-muted {
+  margin: 0;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px dashed var(--mabel-border);
+  background: var(--mabel-surface);
+  border-radius: var(--mabel-radius-md);
+}
+
+.mabel-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-field span {
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.mabel-field input,
+.mabel-field textarea,
+.mabel-field select {
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+  outline: none;
+}
+
+.mabel-field input:focus,
+.mabel-field textarea:focus,
+.mabel-field select:focus {
+  border-color: var(--mabel-border-strong);
+}
+
+.mabel-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mabel-picker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-xs);
+  cursor: pointer;
+}
+
+.mabel-picker-chip:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+}
+
+.mabel-picker-chip input {
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--mabel-accent);
+}
+
+.mabel-picker-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+.mabel-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.mabel-form__error {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-status-err);
+}
+
+/* Error toast */
+.mabel-error {
+  align-self: center;
+  width: 100%;
+  max-width: 760px;
+  margin: 8px auto 0;
+  color: var(--mabel-status-err);
+  background: rgba(220, 38, 38, 0.07);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--mabel-radius-md);
+  padding: 8px 12px;
+  font-size: var(--mabel-font-sm);
+}
+
+/* Dedicated pages (Connectors / Skills / Workflows) */
+.mabel-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--mabel-bg);
+}
+
+.mabel-page__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 28px 12px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+.mabel-page__title h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mabel-text);
+}
+
+.mabel-page__title p {
+  margin: 4px 0 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  max-width: 560px;
+}
+
+.mabel-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.mabel-page__actions > * {
+  height: 30px;
+}
+
+.mabel-skill-create {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mabel-skill-create__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 220px;
+  padding: 5px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-pop);
+}
+
+.mabel-skill-create__menu button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text);
+  text-align: left;
+  border-radius: var(--mabel-radius-xs);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mabel-skill-create__menu button:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-skill-create__menu strong {
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+}
+
+.mabel-page__search {
+  min-width: 220px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  border-radius: var(--mabel-radius-sm);
+  font-size: var(--mabel-font-sm);
+  outline: none;
+  line-height: 1;
+}
+
+.mabel-page__search.mabel-logs-range {
+  min-width: 0;
+  width: 116px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.mabel-page__search.mabel-library-range {
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.mabel-page__search.mabel-library-range[aria-label="Library file type"] {
+  width: 124px;
+}
+
+.mabel-page__search.mabel-library-range[aria-label="Library source"] {
+  width: 116px;
+}
+
+.mabel-page__search:focus {
+  border-color: var(--mabel-text-faint);
+  box-shadow: 0 0 0 3px var(--mabel-chip);
+}
+
+.mabel-page__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mabel-marketplace-status,
+.mabel-page__notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-panel);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-marketplace-status__error,
+.mabel-page__notice--error {
+  color: var(--mabel-status-err);
+}
+
+.mabel-marketplace-status__fallback {
+  color: var(--mabel-status-warn);
+}
+
+.mabel-page__notice {
+  justify-content: flex-start;
+  color: var(--mabel-status-ok);
+}
+
+.mabel-card {
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-card__title {
+  margin: 0 0 12px;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+}
+
+.mabel-form--page {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.mabel-scheduled-form__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.mabel-scheduled-next {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-skill-form__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-surface);
+}
+
+.mabel-skill-form__meta span {
+  font-size: var(--mabel-font-2xs);
+  color: var(--mabel-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.mabel-skill-form__meta code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-page__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-page__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-page__row--disabled {
+  opacity: 0.6;
+}
+
+.mabel-page__row--column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-page__row-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mabel-connectors-page .mabel-page__row-top {
+  grid-template-columns: minmax(156px, 220px) minmax(260px, 1fr) 150px 360px;
+  column-gap: 18px;
+}
+
+.mabel-page__row-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mabel-page__row-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mabel-page__row-main strong {
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-page__row-id {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.mabel-page__row-description {
+  margin-top: 4px;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  line-height: 1.35;
+}
+
+.mabel-page__row-description--inline {
+  margin-top: 0;
+  color: var(--mabel-text-faint);
+  font-size: var(--mabel-font-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-page__connector-description {
+  justify-self: start;
+  width: 100%;
+  max-width: 500px;
+  margin-top: 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  line-height: 1.35;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translateX(-56px);
+}
+
+@media (max-width: 980px) {
+  .mabel-page__row-top {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .mabel-page__connector-description {
+    justify-self: start;
+    white-space: normal;
+    text-align: left;
+    transform: none;
+  }
+}
+
+.mabel-page__row-description--snippet {
+  font-style: italic;
+}
+
+.mabel-page__row-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mabel-connectors-page .mabel-page__row-side {
+  width: 150px;
+  min-width: 150px;
+}
+
+.mabel-page__row-side--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.mabel-page__row-side-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.mabel-page__row-side-line--dates {
+  gap: 12px;
+}
+
+.mabel-page__row-meta {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-page__row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  width: 360px;
+  min-width: 0;
+}
+
+.mabel-page__row-actions > * {
+  height: 30px;
+}
+
+.mabel-page__sub {
+  width: 100%;
+  border-top: 1px solid var(--mabel-border-soft);
+  padding-top: 10px;
+}
+
+.mabel-page__sub--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mabel-page__chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mabel-page__chips--memory {
+  margin-top: 8px;
+}
+
+.mabel-page__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--mabel-surface);
+  border: 1px solid var(--mabel-border-soft);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-page__tools {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-page__tool {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--mabel-surface);
+  border-radius: var(--mabel-radius-xs);
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-page__tool-main {
+  flex: 1;
+  min-width: 220px;
+}
+
+.mabel-page__tool-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.mabel-page__tool-actions > span {
+  display: inline-flex !important;
+  align-items: center;
+  margin-top: 0 !important;
+  font-size: var(--mabel-font-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mabel-memory .mabel-field--confidence {
+  gap: 2px;
+}
+
+.mabel-memory .mabel-field--confidence input[type="range"] {
+  padding: 0;
+  height: 20px;
+  border: 0;
+  background: transparent;
+  accent-color: var(--mabel-accent);
+}
+
+.mabel-memory .mabel-field--confidence input[type="range"]:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.mabel-page__tool-result--success {
+  color: var(--mabel-status-ok) !important;
+}
+
+.mabel-page__tool-result--error {
+  color: var(--mabel-status-err) !important;
+}
+
+.mabel-page__tool-result--approval {
+  color: var(--mabel-status-warn) !important;
+}
+
+.mabel-page__tool-output {
+  margin: 6px 0 0;
+  width: 100%;
+  max-height: 200px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: var(--mabel-radius-xs);
+  border: 1px solid var(--mabel-border-soft);
+  background: var(--mabel-surface);
+  color: var(--mabel-text-soft);
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mabel-page__tool strong {
+  display: block;
+  font-weight: 600;
+  color: var(--mabel-text);
+}
+
+.mabel-page__tool-main > span {
+  display: block;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+  margin-top: 2px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mabel-artifacts-grid {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-content: start;
+  gap: 10px;
+}
+
+.mabel-artifacts-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 24px;
+  color: var(--mabel-text-muted);
+  text-align: center;
+}
+
+.mabel-artifacts-empty-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+  border: 1px solid var(--mabel-border-soft);
+  color: var(--mabel-text-faint);
+  margin-bottom: 4px;
+}
+
+.mabel-artifacts-empty-state strong {
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+}
+
+.mabel-artifacts-empty-state span {
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-artifact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 168px;
+  padding: 12px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-artifact-card--active {
+  border-color: var(--mabel-border-strong);
+  box-shadow: 0 0 0 3px var(--mabel-chip);
+}
+
+.mabel-artifact-card__main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.mabel-artifact-card__main strong {
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.mabel-artifact-card__main .mabel-pill {
+  align-self: flex-start;
+}
+
+.mabel-artifact-card__main span:last-child {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mabel-artifact-card__meta,
+.mabel-artifact-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mabel-artifact-card__meta {
+  color: var(--mabel-text-faint);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-artifact-card__actions {
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.mabel-artifact-card__actions .mabel-button {
+  height: 28px;
+  flex: 0 0 auto;
+}
+
+.mabel-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mabel-usage-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-usage-metric--with-tooltip {
+  overflow: visible;
+}
+
+.mabel-usage-metric span {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-usage-metric__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mabel-usage-metric__hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text-faint);
+  padding: 0;
+  line-height: 1;
+  cursor: help;
+}
+
+.mabel-usage-metric__hint:hover,
+.mabel-usage-metric__hint:focus-visible {
+  color: var(--mabel-text);
+  outline: none;
+}
+
+.mabel-usage-metric__hint::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: -12px;
+  width: 300px;
+  height: 12px;
+}
+
+.mabel-usage-metric__tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: -8px;
+  z-index: 20;
+  width: min(280px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-pop);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-xs);
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.mabel-usage-metric__tooltip::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-left: 1px solid var(--mabel-border);
+  border-top: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  transform: rotate(45deg);
+}
+
+.mabel-usage-metric__hint:hover .mabel-usage-metric__tooltip,
+.mabel-usage-metric__hint:focus-visible .mabel-usage-metric__tooltip,
+.mabel-usage-metric__tooltip:hover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.mabel-usage-metric__tooltip a {
+  color: var(--mabel-text);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mabel-usage-metric .mabel-usage-metric__tooltip strong {
+  display: inline;
+  font-size: inherit;
+  font-weight: 650;
+  color: inherit;
+  font-variant-numeric: inherit;
+}
+
+.mabel-usage-metric strong {
+  color: var(--mabel-text);
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.mabel-library-actions {
+  flex-wrap: wrap;
+}
+
+.mabel-logs-metrics {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.mabel-logs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.mabel-logs-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(360px, 1.05fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.mabel-logs-usage-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.mabel-logs-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-height: 21px;
+}
+
+.mabel-logs-card-head .mabel-card__title {
+  margin: 0;
+}
+
+.mabel-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mabel-logs-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-surface);
+  overflow-x: auto;
+}
+
+.mabel-logs-view-toggle__item {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mabel-text-muted);
+  cursor: pointer;
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.mabel-logs-view-toggle__item:hover,
+.mabel-logs-view-toggle__item:focus-visible {
+  color: var(--mabel-text);
+  outline: none;
+}
+
+.mabel-logs-view-toggle__item--active {
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-card);
+  color: var(--mabel-text);
+}
+
+.mabel-logs-usage-card > .mabel-page__tools,
+.mabel-logs-usage-card > .mabel-logs-stat-list,
+.mabel-logs-tools-view,
+.mabel-logs-metrics-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mabel-logs-metrics-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mabel-logs-grid--compact {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.mabel-logs-breakdown-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mabel-logs-card-block--wide {
+  grid-column: 1 / -1;
+}
+
+.mabel-logs-card-block + .mabel-logs-card-block {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.mabel-logs-subtitle {
+  margin: 0 0 8px;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.mabel-logs-stat-list {
+  gap: 4px;
+}
+
+.mabel-logs-stat-row {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 7px 9px;
+}
+
+.mabel-logs-stat-row .mabel-page__tool-main {
+  min-width: 0;
+}
+
+.mabel-logs-stat-list--daily {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mabel-logs-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+}
+
+.mabel-logs-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-logs-table th,
+.mabel-logs-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--mabel-border-soft);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.mabel-logs-table th {
+  background: var(--mabel-surface);
+  color: var(--mabel-text-muted);
+  font-weight: 600;
+}
+
+.mabel-logs-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.mabel-page__sessions {
+  width: 100%;
+  border-top: 1px solid var(--mabel-border-soft);
+  padding-top: 10px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-page__sessions-head {
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--mabel-text-faint);
+  text-transform: uppercase;
+}
+
+.mabel-page__sessions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-page__session {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--mabel-border-soft);
+  background: var(--mabel-surface);
+  color: var(--mabel-text);
+  border-radius: var(--mabel-radius-xs);
+  text-align: left;
+  font-size: var(--mabel-font-sm);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.mabel-page__session:hover {
+  background: var(--mabel-chip);
+  border-color: var(--mabel-border);
+}
+
+.mabel-page__session-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-page__session-meta {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+  white-space: nowrap;
+}
+
+.mabel-page__briefs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-page__brief pre {
+  margin: 0;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  background: var(--mabel-surface);
+  border-radius: var(--mabel-radius-sm);
+  border: 1px solid var(--mabel-border-soft);
+  color: var(--mabel-text-soft);
+  overflow: auto;
+  max-height: 260px;
+}
+
+.mabel-workflow-run {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+}
+
+.mabel-workflow-run__head,
+.mabel-workflow-step__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mabel-workflow-run__head > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mabel-workflow-run__head strong,
+.mabel-workflow-step strong,
+.mabel-workflow-run__logs strong {
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+}
+
+.mabel-workflow-run__head span {
+  color: var(--mabel-text-faint);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: var(--mabel-font-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-workflow-run__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mabel-workflow-run__objective {
+  margin: 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  line-height: 1.4;
+}
+
+.mabel-workflow-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-workflow-step {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-panel);
+}
+
+.mabel-workflow-step p {
+  margin: 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  line-height: 1.4;
+}
+
+.mabel-workflow-run__logs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 10px;
+  border-top: 1px solid var(--mabel-border-soft);
+}
+
+.mabel-workflow-run__logs span {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  line-height: 1.4;
+}
+
+.mabel-docs__body {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.38fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.mabel-docs__tabs {
+  max-height: calc(100vh - 210px);
+  overflow: auto;
+}
+
+.mabel-docs__tab-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-docs__tab {
+  width: 100%;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  text-align: left;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.mabel-docs__tab small {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-docs__tab--active {
+  border-color: var(--mabel-accent);
+  background: var(--mabel-chip);
+}
+
+.mabel-docs__editor {
+  min-height: calc(100vh - 210px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mabel-docs__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mabel-docs__title {
+  flex: 1;
+  min-width: 220px;
+}
+
+.mabel-docs__kind {
+  width: 140px;
+}
+
+.mabel-docs__panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+
+.mabel-docs__pane {
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-surface);
+  padding: 10px;
+  min-height: 0;
+}
+
+.mabel-docs__pane--edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mabel-docs__textarea {
+  min-height: 340px;
+  resize: vertical;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--mabel-text);
+  background: var(--mabel-panel);
+}
+
+.mabel-docs__preview-head {
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-muted);
+  margin-bottom: 8px;
+}
+
+.mabel-docs__preview-body {
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  padding: 10px;
+  background: var(--mabel-panel);
+  min-height: 340px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.mabel-docs__html-preview {
+  width: 100%;
+  min-height: 500px;
+  border: 0;
+  background: #fff;
+}
+
+.mabel-docs__csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-docs__csv-table td {
+  border: 1px solid var(--mabel-border-soft);
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
+.mabel-docs__text-preview {
+  white-space: pre-wrap;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.mabel-field__hint {
+  margin-top: 4px;
+  display: block;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.mabel-button--danger {
+  background: var(--mabel-status-err);
+  border-color: var(--mabel-status-err);
+  color: #fff;
+}
+
+.mabel-button--danger.mabel-button--ghost {
+  background: transparent;
+  color: var(--mabel-status-err);
+  border-color: var(--mabel-border);
+}
+
+.mabel-button--danger.mabel-button--ghost:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.mabel-modal__panel--sm {
+  width: min(420px, 100%);
+}
+
+.mabel-modal__panel--sm .mabel-modal__head,
+.mabel-modal__panel--sm .mabel-modal__foot {
+  border: 0;
+}
+
+.mabel-modal__panel--sm .mabel-modal__section {
+  padding-top: 0;
+}
+
+.mabel-modal__foot {
+  gap: 8px;
+}
+
+.mabel-modal__foot--split {
+  justify-content: flex-end;
+}
+
+.mabel-modal__body {
+  margin: 0;
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-soft);
+}
+
+/* Activity panel */
+.mabel-activity {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.mabel-activity__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  min-height: 49px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+/* When the context rail is open, MabelPage sets --mabel-chat-topbar-height from the
+ * measured chat topbar so this header stays the same height when the topbar wraps. */
+.mabel-app-shell[data-context="open"] .mabel-activity__head {
+  min-height: var(--mabel-chat-topbar-height, 49px);
+}
+
+.mabel-activity__title {
+  margin: 0;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+  line-height: 1;
+}
+
+.mabel-activity__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px 16px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mabel-activity__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-activity__section-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--mabel-font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mabel-text-faint);
+  font-weight: 600;
+}
+
+.mabel-activity__count {
+  font-size: var(--mabel-font-2xs);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  color: var(--mabel-text-muted);
+  font-weight: 500;
+}
+
+.mabel-activity__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-activity__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-panel);
+  border-radius: var(--mabel-radius-md);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-activity__row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mabel-activity__row-main strong {
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+  color: var(--mabel-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mabel-activity__row-meta {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-activity__row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mabel-activity__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-activity__approvals {
+  padding: 0 14px 8px;
+  border-bottom: 1px solid var(--mabel-border-soft);
+}
+
+.mabel-activity__empty {
+  padding: 14px;
+  margin: 0;
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-faint);
+}
+
+/* Chain-of-Thought timeline — prompt-kit style. Vertical guide line with
+ * one step per user message, tool call, or assistant answer. Each step is
+ * expandable to reveal inputs / outputs / sources. */
+/* Activity panel's Chain-of-Thought — pure prompt-kit style. Now scoped
+ * to ONLY reasoning steps ("Thought for Ns") since tool actions live in
+ * the inline MessageSteps timeline above each assistant message.
+ *
+ * Visual reference: https://www.prompt-kit.com/docs/chain-of-thought */
+.mabel-cot {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Each step is a vertical stack: head row (dot + title) + optional
+ * expanded detail block underneath, indented to align with the title. */
+.mabel-cot__step {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+/* `align-items: center` keeps the small dot vertically centered on the
+ * single-line "Thought for N seconds" title — flex-start was making the
+ * dot float ~3px below the text's baseline. */
+.mabel-cot__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+
+.mabel-cot__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--mabel-bg);
+  border: 1.5px solid var(--mabel-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mabel-text-muted);
+  flex: 0 0 auto;
+}
+
+.mabel-cot__dot svg {
+  width: 8px;
+  height: 8px;
+}
+
+.mabel-cot__dot--running {
+  border-color: var(--mabel-text-muted);
+  color: var(--mabel-text);
+}
+
+.mabel-cot__dot--running svg {
+  animation: mabel-tool-spin 1s linear infinite;
+}
+
+.mabel-cot__dot--done {
+  background: var(--mabel-text);
+  border-color: var(--mabel-text);
+  color: var(--mabel-bg);
+}
+
+.mabel-cot__dot--done svg {
+  color: var(--mabel-bg);
+}
+
+/* "Thinking" subheader — small, all-caps muted label above the steps,
+ * matches the prompt-kit chain-of-thought header. */
+.mabel-activity__thinking {
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mabel-activity__section {
+  margin: 0;
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  color: var(--mabel-text);
+  letter-spacing: -0.005em;
+}
+
+.mabel-activity__elapsed {
+  font-weight: 400;
+  color: var(--mabel-text-muted);
+  margin-left: 4px;
+}
+
+/* Chain-of-Thought row: full-width title button. Hover lifts the muted
+ * text to full color so the row reads as clickable when there's actual
+ * reasoning content to expand. A `--static` variant skips the
+ * hover/cursor styling for rows with no expandable content (the
+ * common "Thought for Ns" case when the model didn't emit reasoning). */
+.mabel-cot__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  color: var(--mabel-text);
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  border-radius: var(--mabel-radius-xs);
+  transition: color 120ms ease;
+}
+
+button.mabel-cot__row:hover {
+  color: var(--mabel-text);
+}
+
+.mabel-cot__row--static {
+  cursor: default;
+}
+
+/* The final "answer" step is the highlight of the timeline — render it
+ * in full text weight/color so the eye lands there last, like the
+ * "Summary generated" row in the prompt-kit Steps screenshot. */
+.mabel-cot__step--answer .mabel-cot__row {
+  color: var(--mabel-text);
+}
+
+.mabel-cot__step--answer .mabel-cot__title {
+  font-weight: 600;
+}
+
+.mabel-cot__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+  flex: 1 1 auto;
+}
+
+.mabel-cot__title {
+  font-size: var(--mabel-font-sm);
+  font-weight: 400;
+  line-height: 1.4;
+  color: inherit;
+}
+
+.mabel-cot__status {
+  font-size: 11.5px;
+  color: var(--mabel-text-faint);
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.mabel-cot__chevron {
+  flex: 0 0 auto;
+  color: var(--mabel-text-faint);
+  transition: transform 160ms ease;
+}
+
+.mabel-cot__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Expanded detail block — the full reasoning text. Indented (24px) so it
+ * aligns under the title, NOT under the dot. Renders as markdown so
+ * **bold** and lists in the reasoning look right. No chunky gray box. */
+.mabel-cot__detail {
+  margin: 0 0 4px 24px;
+  padding: 4px 0 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-cot__detail-label {
+  font-size: var(--mabel-font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mabel-text-faint);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.mabel-cot__detail-label:first-child {
+  margin-top: 0;
+}
+
+.mabel-cot__pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--mabel-text);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+}
+
+.mabel-cot__empty {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  font-style: italic;
+}
+
+.mabel-cot__answer {
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-muted);
+  line-height: 1.5;
+}
+
+.mabel-cot__sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-cot__sources a {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-bg);
+  border: 1px solid var(--mabel-border-soft);
+  color: var(--mabel-text);
+}
+
+.mabel-cot__sources a:hover {
+  background: var(--mabel-surface);
+  border-color: var(--mabel-border);
+}
+
+.mabel-cot__source-title {
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-cot__source-host {
+  font-size: 10.5px;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-cot__step--thinking .mabel-cot__label {
+  color: var(--mabel-text-muted);
+  font-style: italic;
+}
+
+.mabel-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border-soft);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-xs);
+  font-weight: 500;
+}
+
+.mabel-pill--ok {
+  border-color: rgba(22, 163, 74, 0.4);
+  color: var(--mabel-status-ok);
+}
+
+.mabel-pill--warn {
+  border-color: color-mix(in srgb, var(--mabel-status-warn) 42%, var(--mabel-border));
+  color: var(--mabel-status-warn);
+}
+
+.mabel-pill--engine {
+  border-color: rgba(15, 15, 16, 0.18);
+  background: rgba(15, 15, 16, 0.05);
+  color: var(--mabel-text);
+}
+
+/* MCP toggle */
+.mabel-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-toggle input {
+  appearance: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--mabel-border);
+  position: relative;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.mabel-toggle input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--mabel-panel);
+  transition: transform 160ms ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.mabel-toggle input:checked {
+  background: var(--mabel-accent);
+}
+
+.mabel-toggle input:checked::after {
+  transform: translateX(12px);
+}
+
+/* Settings modal */
+.mabel-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.mabel-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.mabel-modal__panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  background: var(--mabel-panel);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-lg);
+  box-shadow: var(--mabel-shadow-pop);
+  display: flex;
+  flex-direction: column;
+}
+
+.mabel-modal__panel--wide {
+  width: min(860px, 100%);
+}
+
+.mabel-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mabel-border);
+}
+
+.mabel-modal__head h2 {
+  margin: 0;
+  font-size: var(--mabel-font-title);
+  font-weight: 600;
+  color: var(--mabel-text);
+}
+
+.mabel-modal__subhead {
+  margin: 2px 0 0;
+  color: var(--mabel-text-faint);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-modal__section {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mabel-modal__foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--mabel-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mabel-skill-upload {
+  width: 100%;
+  min-height: 124px;
+  border: 1px dashed var(--mabel-border-strong);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+  color: var(--mabel-text);
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  padding: 20px;
+  text-align: center;
+}
+
+.mabel-skill-upload:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-skill-upload__icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mabel-text-muted);
+}
+
+.mabel-skill-upload__icon svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mabel-skill-upload strong {
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+}
+
+.mabel-skill-upload span:last-child {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-skill-upload__input {
+  display: none;
+}
+
+.mabel-skill-preview__description {
+  margin: 0;
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-skill-preview__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-skill-preview__content {
+  margin: 0;
+  max-height: 52vh;
+  overflow: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+}
+
+.mabel-skill-preview__content .mabel-markdown {
+  font-size: var(--mabel-font-body);
+  line-height: 1.6;
+}
+
+.mabel-segment {
+  display: inline-flex;
+  align-items: center;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-sm);
+  padding: 2px;
+  width: max-content;
+}
+
+.mabel-segment__option {
+  border: 0;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: var(--mabel-radius-xs);
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-muted);
+}
+
+.mabel-segment__option--active {
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font-weight: 500;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+/* Artifact / canvas panel (sits in the same right rail as Activity). */
+.mabel-artifact {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--mabel-surface);
+}
+
+.mabel-artifact__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-surface);
+  min-height: 38px;
+}
+
+.mabel-artifact__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mabel-artifact__lang {
+  font-family: ui-monospace, SFMono-Regular, "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mabel-text);
+}
+
+.mabel-artifact__meta {
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.mabel-artifact__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mabel-artifact__tabs {
+  display: inline-flex;
+  background: var(--mabel-chip);
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-xs);
+  padding: 2px;
+}
+
+.mabel-artifact__tab {
+  border: 0;
+  background: transparent;
+  padding: 3px 10px;
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text-muted);
+  border-radius: var(--mabel-radius-xs);
+}
+
+.mabel-artifact__tab--active {
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font-weight: 500;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-artifact__copy {
+  background: transparent;
+  border: 1px solid var(--mabel-border);
+  padding: 3px 10px;
+  border-radius: var(--mabel-radius-xs);
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text);
+  height: 26px;
+}
+
+.mabel-artifact__copy:hover {
+  background: var(--mabel-chip);
+}
+
+.mabel-artifact__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: var(--mabel-bg);
+}
+
+.mabel-artifact__preview {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--mabel-bg);
+}
+
+/* Generated file preview panel. Uses the same right rail as Activity and
+ * markdown artifacts, but fetches file bytes through Mabel's authenticated
+ * file endpoint so DOCX/PDF/XLSX/image/text outputs are inspectable inline. */
+.mabel-file-preview {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--mabel-surface);
+}
+
+.mabel-file-preview__head {
+  box-sizing: border-box;
+  min-height: 49px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mabel-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--mabel-bg);
+}
+
+.mabel-file-preview__title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.mabel-file-preview__title > div {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mabel-file-preview__title strong {
+  display: inline;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--mabel-font-sm);
+  color: var(--mabel-text);
+}
+
+.mabel-file-preview__title span {
+  display: inline;
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mabel-file-preview__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.mabel-file-preview__error {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mabel-border);
+  font-size: var(--mabel-font-xs);
+  color: var(--mabel-danger);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.mabel-file-preview__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  background: var(--mabel-bg);
+}
+
+.mabel-file-preview__status {
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+  border: 1px dashed var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+  padding: 18px;
+}
+
+.mabel-file-preview__status--error {
+  color: var(--mabel-danger);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.mabel-file-preview__pdf,
+.mabel-file-preview__office-frame,
+.mabel-file-preview__xlsx,
+.mabel-file-preview__markdown,
+.mabel-file-preview__image,
+.mabel-file-preview__text {
+  background: var(--mabel-surface);
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  overflow: auto;
+  min-height: 180px;
+}
+
+.mabel-file-preview__pdf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+}
+
+.mabel-file-preview__pdf-page {
+  max-width: 100%;
+  background: #fff;
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-file-preview__office-frame {
+  width: 100%;
+  min-height: 1200px;
+  border: 0;
+  background: #f2f4f7;
+}
+
+.mabel-file-preview__markdown {
+  padding: 22px;
+  background: #f2f4f7;
+}
+
+.mabel-file-preview__doc-page {
+  margin: 0 auto;
+  width: min(780px, 100%);
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.1);
+  padding: 36px 44px;
+}
+
+.mabel-file-preview__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--mabel-border);
+  background: var(--mabel-bg);
+}
+
+.mabel-file-preview__tabs button {
+  border: 1px solid var(--mabel-border);
+  background: var(--mabel-surface);
+  color: var(--mabel-text-muted);
+  border-radius: var(--mabel-radius-xs);
+  padding: 4px 8px;
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-file-preview__tabs button.active {
+  color: var(--mabel-text);
+  border-color: var(--mabel-border-strong);
+  background: var(--mabel-chip);
+}
+
+.mabel-file-preview__sheet {
+  padding: 14px;
+  overflow: auto;
+  background: #f2f4f7;
+}
+
+.mabel-file-preview__sheet table {
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #111827;
+  background: #fff;
+  min-width: min(760px, 100%);
+}
+
+.mabel-file-preview__sheet td,
+.mabel-file-preview__sheet th {
+  border: 1px solid #d0d5dd;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+.mabel-file-preview__sheet th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.mabel-file-preview__image {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+
+.mabel-file-preview__image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--mabel-radius-sm);
+}
+
+.mabel-file-preview__text {
+  padding: 0;
+}
+
+.mabel-file-preview__text pre {
+  margin: 0;
+  padding: 12px 14px;
+  color: var(--mabel-text);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mabel-file-preview__text p {
+  margin: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--mabel-border);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-file-preview__text--code {
+  position: relative;
+}
+
+.mabel-file-preview__copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-xs);
+  color: var(--mabel-text-soft);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 10;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, width 120ms ease;
+  white-space: nowrap;
+}
+
+.mabel-file-preview__copy-btn:hover {
+  background: var(--mabel-chip);
+  color: var(--mabel-text);
+  border-color: var(--mabel-border);
+}
+
+.mabel-file-preview__copy-btn.copied {
+  background: transparent;
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+/* Projects, Library, and Start My Day */
+.mabel-feature-empty {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  border: 1px dashed var(--mabel-border);
+  border-radius: var(--mabel-radius-lg);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-md);
+  line-height: 1.35;
+  text-align: center;
+}
+
+.mabel-feature-empty__icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+  color: var(--mabel-text-soft);
+}
+
+.mabel-feature-empty strong {
+  color: var(--mabel-text);
+  font-weight: 600;
+}
+
+.mabel-feature-empty > span:not(.mabel-feature-empty__icon) {
+  font-weight: 400;
+}
+
+.mabel-feature-empty > .mabel-button {
+  margin-top: 8px;
+}
+
+.mabel-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.mabel-project-card {
+  min-width: 0;
+  min-height: 142px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  text-align: left;
+  box-shadow: var(--mabel-shadow-card);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.mabel-project-card:hover {
+  border-color: var(--mabel-border-strong);
+  background: color-mix(in srgb, var(--mabel-panel) 92%, var(--mabel-chip));
+}
+
+.mabel-project-mark {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: var(--mabel-radius-sm);
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mabel-project-mark--slate { color: #475569; background: #f1f5f9; }
+.mabel-project-mark--blue { color: #1d4ed8; background: #eff6ff; }
+.mabel-project-mark--green { color: #15803d; background: #f0fdf4; }
+.mabel-project-mark--amber { color: #b45309; background: #fffbeb; }
+.mabel-project-mark--rose { color: #be123c; background: #fff1f2; }
+.mabel-project-mark--violet { color: #6d28d9; background: #f5f3ff; }
+
+.mabel-app-shell[data-theme="dark"] .mabel-project-mark {
+  background: color-mix(in srgb, currentColor 12%, var(--mabel-panel));
+}
+
+.mabel-project-card__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-project-card__copy strong {
+  overflow: hidden;
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-project-card__copy span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mabel-project-card__meta {
+  grid-column: 1 / -1;
+  align-self: end;
+  margin-top: 12px;
+  color: var(--mabel-text-faint);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-project-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mabel-project-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-project-hero > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.mabel-project-hero h2,
+.mabel-project-section h3,
+.mabel-project-settings h3 {
+  margin: 0;
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.mabel-project-hero p,
+.mabel-project-section__head p {
+  margin: 3px 0 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-project-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mabel-project-section {
+  min-height: 260px;
+}
+
+.mabel-project-section__head,
+.mabel-project-settings__actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mabel-project-section__head h3,
+.mabel-project-settings h3 {
+  font-size: var(--mabel-font-md);
+}
+
+.mabel-project-add-row {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.mabel-project-add-row select,
+.mabel-library-toolbar select {
+  min-width: 0;
+  height: 30px;
+  flex: 1;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font: inherit;
+  font-size: var(--mabel-font-xs);
+  outline: none;
+}
+
+.mabel-project-add-row select:focus,
+.mabel-project-add-row select:focus-visible,
+.mabel-library-toolbar select:focus,
+.mabel-library-toolbar select:focus-visible {
+  border-color: var(--mabel-border-strong);
+  box-shadow: 0 0 0 3px var(--mabel-chip);
+}
+
+.mabel-project-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mabel-project-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--mabel-border-soft);
+  border-radius: var(--mabel-radius-sm);
+  background: var(--mabel-surface);
+}
+
+.mabel-project-list li > button:first-child {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text);
+  text-align: left;
+}
+
+.mabel-project-list li > button:first-child strong {
+  overflow: hidden;
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-project-list li > button:first-child span {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-project-list__remove {
+  margin-right: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-project-list__remove:hover {
+  color: var(--mabel-status-err);
+}
+
+.mabel-project-settings__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.mabel-project-settings__fields label,
+.mabel-project-create label,
+.mabel-library-note-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mabel-project-settings__fields label > span,
+.mabel-project-create label > span,
+.mabel-project-create legend,
+.mabel-library-note-editor__field > span {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  font-weight: 500;
+}
+
+.mabel-project-settings__fields input,
+.mabel-project-settings__fields textarea,
+.mabel-project-create input,
+.mabel-project-create textarea,
+.mabel-library-note-editor input,
+.mabel-library-note-editor textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-sm);
+  outline: none;
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  font: inherit;
+  font-size: var(--mabel-font-sm);
+  resize: vertical;
+}
+
+.mabel-project-settings__fields input:focus,
+.mabel-project-settings__fields textarea:focus,
+.mabel-project-create input:focus,
+.mabel-project-create textarea:focus,
+.mabel-library-note-editor input:focus,
+.mabel-library-note-editor textarea:focus {
+  border-color: var(--mabel-border-strong);
+  box-shadow: 0 0 0 3px var(--mabel-chip);
+}
+
+.mabel-project-settings__instructions {
+  grid-column: 1 / -1;
+}
+
+.mabel-project-settings__actions {
+  align-items: center;
+  margin-top: 14px;
+}
+
+.mabel-project-create small {
+  color: var(--mabel-text-faint);
+  font-weight: 400;
+}
+
+.mabel-project-create fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mabel-project-create legend {
+  margin-bottom: 7px;
+}
+
+.mabel-project-color-picker {
+  display: flex;
+  gap: 8px;
+}
+
+.mabel-project-color-picker label {
+  position: relative;
+  display: block;
+}
+
+.mabel-project-color-picker input {
+  position: absolute;
+  inset: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mabel-project-color {
+  width: 24px;
+  height: 24px;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--mabel-text) 18%, var(--mabel-border));
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mabel-project-color-picker .mabel-project-mark--slate { background: #64748b; color: #64748b; }
+.mabel-project-color-picker .mabel-project-mark--blue { background: #2563eb; color: #2563eb; }
+.mabel-project-color-picker .mabel-project-mark--green { background: #16a34a; color: #16a34a; }
+.mabel-project-color-picker .mabel-project-mark--amber { background: #d97706; color: #d97706; }
+.mabel-project-color-picker .mabel-project-mark--rose { background: #e11d48; color: #e11d48; }
+.mabel-project-color-picker .mabel-project-mark--violet { background: #7c3aed; color: #7c3aed; }
+
+.mabel-project-color-picker input:checked + .mabel-project-color {
+  border-color: var(--mabel-text);
+  box-shadow: 0 0 0 2px var(--mabel-panel), 0 0 0 3px currentColor;
+}
+
+.mabel-project-color-picker input:focus-visible + .mabel-project-color {
+  outline: none;
+  border-color: var(--mabel-text);
+  box-shadow: 0 0 0 2px var(--mabel-panel), 0 0 0 3px var(--mabel-border-strong);
+}
+
+.mabel-library-body {
+  position: relative;
+}
+
+.mabel-library-body--drag {
+  background: color-mix(in srgb, var(--mabel-chip) 50%, transparent);
+}
+
+.mabel-library-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.mabel-library-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mabel-library-toolbar__label {
+  flex: 0 0 auto;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mabel-library-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-surface);
+}
+
+.mabel-library-segmented button {
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: calc(var(--mabel-radius-xs) - 2px);
+  background: transparent;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  white-space: nowrap;
+}
+
+.mabel-library-segmented button:hover {
+  color: var(--mabel-text);
+}
+
+.mabel-library-segmented button.mabel-library-segmented__active {
+  background: var(--mabel-panel);
+  color: var(--mabel-text);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--mabel-text) 12%, transparent);
+}
+
+.mabel-library-filters,
+.mabel-library-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mabel-library-toolbar select {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.mabel-library-drop {
+  position: absolute;
+  inset: 28px;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--mabel-border-strong);
+  border-radius: var(--mabel-radius-lg);
+  background: color-mix(in srgb, var(--mabel-panel) 94%, transparent);
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.mabel-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.mabel-library-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-library-card__preview {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 0;
+  background: transparent;
+  color: var(--mabel-text);
+  text-align: left;
+}
+
+.mabel-library-file-icon {
+  width: 44px;
+  height: 52px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 6px;
+  border: 1px solid var(--mabel-border);
+  border-radius: 5px 10px 5px 5px;
+  background: var(--mabel-surface);
+  color: var(--mabel-text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mabel-library-file-icon--images { color: #6d28d9; background: color-mix(in srgb, #f5f3ff 75%, var(--mabel-panel)); }
+.mabel-library-file-icon--spreadsheets { color: #15803d; background: color-mix(in srgb, #f0fdf4 75%, var(--mabel-panel)); }
+.mabel-library-file-icon--pdfs { color: #b91c1c; background: color-mix(in srgb, #fef2f2 75%, var(--mabel-panel)); }
+.mabel-library-file-icon--notes { color: #1d4ed8; background: color-mix(in srgb, #eff6ff 75%, var(--mabel-panel)); }
+
+.mabel-library-card__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mabel-library-card__copy strong {
+  overflow: hidden;
+  font-size: var(--mabel-font-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mabel-library-card__copy span,
+.mabel-library-card__meta {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-library-card__meta {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px 8px;
+}
+
+.mabel-library-card__meta span + span::before {
+  content: "·";
+  margin-right: 6px;
+}
+
+.mabel-library-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 10px 12px;
+  border-top: 1px solid var(--mabel-border-soft);
+}
+
+.mabel-library-note-editor {
+  width: min(680px, 100%);
+}
+
+.mabel-library-note-editor textarea {
+  min-height: 260px;
+  line-height: 1.55;
+}
+
+.mabel-start-day {
+  overflow: hidden;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-lg);
+  background: var(--mabel-panel);
+  box-shadow: var(--mabel-shadow-card);
+}
+
+.mabel-start-day__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+}
+
+.mabel-start-day__copy {
+  min-width: 0;
+}
+
+.mabel-start-day__eyebrow {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: var(--mabel-text-faint);
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mabel-start-day h2 {
+  margin: 0;
+  color: var(--mabel-text);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.mabel-start-day__copy p {
+  max-width: 680px;
+  margin: 5px 0 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-sm);
+}
+
+.mabel-start-day__connectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 20px 14px;
+}
+
+.mabel-start-day__connectors > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--mabel-border);
+  border-radius: 999px;
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-start-day__connectors small {
+  color: var(--mabel-text-faint);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.mabel-start-day__disclaimer {
+  margin: 0;
+  padding: 10px 20px;
+  border-top: 1px solid var(--mabel-border-soft);
+  background: var(--mabel-surface);
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-start-day__blocked {
+  margin: 0;
+  padding: 10px 20px;
+  border-top: 1px solid color-mix(in srgb, var(--mabel-status-warn) 24%, var(--mabel-border));
+  background: color-mix(in srgb, var(--mabel-status-warn) 6%, var(--mabel-panel));
+  color: var(--mabel-status-warn);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-start-day > .mabel-page__notice {
+  margin: 12px 20px;
+}
+
+.mabel-start-day__result {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--mabel-border);
+}
+
+.mabel-start-day__result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mabel-start-day__result-head > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.mabel-start-day__result-head strong {
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+}
+
+.mabel-start-day__result-head span {
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+}
+
+.mabel-start-day__briefs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.mabel-start-day__brief {
+  padding: 14px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-md);
+  background: var(--mabel-surface);
+}
+
+.mabel-start-day__brief-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.mabel-start-day__brief-head > span {
+  padding: 4px 7px;
+  border: 1px solid var(--mabel-border);
+  border-radius: var(--mabel-radius-xs);
+  background: var(--mabel-panel);
+  color: var(--mabel-text-soft);
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+}
+
+.mabel-start-day__brief h3 {
+  margin: 0;
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-md);
+  font-weight: 600;
+}
+
+.mabel-start-day__brief-head p {
+  margin: 2px 0 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-2xs);
+}
+
+.mabel-start-day__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 10px 0;
+}
+
+.mabel-start-day__sources span {
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--mabel-chip);
+  color: var(--mabel-text-muted);
+  font-size: 9.5px;
+}
+
+.mabel-start-day__brief dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.mabel-start-day__brief dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mabel-start-day__brief dt {
+  color: var(--mabel-text);
+  font-size: var(--mabel-font-2xs);
+  font-weight: 600;
+}
+
+.mabel-start-day__brief dd {
+  margin: 0;
+  color: var(--mabel-text-muted);
+  font-size: var(--mabel-font-xs);
+  line-height: 1.45;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .mabel-app-shell[data-context="open"][data-history="open"] {
+    grid-template-columns: 256px minmax(0, 1fr);
+  }
+  .mabel-app-shell[data-context="open"][data-history="closed"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mabel-context-resizer {
+    display: none !important;
+  }
+  .mabel-context-rail {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(420px, 92vw);
+    z-index: 40;
+    box-shadow: -14px 0 34px rgba(15, 15, 16, 0.18);
+  }
+  .mabel-usage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mabel-docs__body,
+  .mabel-docs__panes {
+    grid-template-columns: 1fr;
+  }
+  .mabel-project-detail__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 880px) {
+  .mabel-app-shell,
+  .mabel-app-shell[data-history="closed"],
+  .mabel-app-shell[data-context="open"][data-history="open"],
+  .mabel-app-shell[data-context="open"][data-history="closed"] {
+    grid-template-columns: 1fr;
+  }
+  .mabel-history-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
+    width: min(300px, 86vw);
+    box-shadow: 14px 0 34px rgba(15, 15, 16, 0.18);
+  }
+  .mabel-app-shell[data-history="closed"] .mabel-history-rail {
+    display: none;
+  }
+  .mabel-welcome__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mabel-welcome__starter-grid {
+    grid-template-columns: 1fr;
+  }
+  .mabel-usage-grid {
+    grid-template-columns: 1fr;
+  }
+  .mabel-page__head,
+  .mabel-project-hero,
+  .mabel-start-day__hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .mabel-library-toolbar {
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  .mabel-page__actions,
+  .mabel-library-toolbar__group {
+    flex-wrap: wrap;
+  }
+  .mabel-page__search {
+    min-width: min(220px, 100%);
+    flex: 1;
+  }
+  .mabel-project-settings__fields {
+    grid-template-columns: 1fr;
+  }
+  .mabel-project-settings__instructions {
+    grid-column: auto;
+  }
+}
