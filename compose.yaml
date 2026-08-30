@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: mabel
+      POSTGRES_USER: mabel
+      POSTGRES_PASSWORD: ${MABEL_POSTGRES_PASSWORD:?Set MABEL_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mabel -d mabel"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - mabel-postgres:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      MABEL_HOST: 0.0.0.0
+      MABEL_PORT: 8820
+      MABEL_STORE_MODE: postgres
+      MABEL_DB_URL: postgresql://mabel:${MABEL_POSTGRES_PASSWORD:?Set MABEL_POSTGRES_PASSWORD}@postgres:5432/mabel
+      MABEL_AUTH_MODE: development
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MABEL_OPENAI_MODEL: ${MABEL_OPENAI_MODEL:-gpt-5.5}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - mabel-data:/app/var
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "${MABEL_WEB_PORT:-5173}:80"
+    depends_on:
+      - api
+
+volumes:
+  mabel-postgres:
+  mabel-data:
