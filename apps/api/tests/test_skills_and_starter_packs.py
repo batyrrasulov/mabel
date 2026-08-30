@@ -49,7 +49,7 @@ def test_skill_create_search_detail_and_run(monkeypatch) -> None:
 
     run = client.post(
         "/api/v1/skills/skill.mabel-style-guide/run",
-        headers={"x-user-email": "am@example.com", "x-user-id": "am-1"},
+        headers={"x-user-email": "builder@example.com", "x-user-id": "builder-1"},
         json={"prompt": "Make this copy sound like Mabel."},
     )
     assert run.status_code == 200
@@ -119,7 +119,12 @@ def test_skills_marketplace_syncs_from_github_registry(monkeypatch) -> None:
                 content_md="# Marketplace Demo\n\nUse GitHub.",
                 tags=["marketplace"],
                 mcp_bindings=[{"server_slug": "github"}],
-                source={"type": "github", "repo": "batyrrasulov/Mabel", "path": "packages/skills/marketplace-demo"},
+                source={
+                    "type": "github",
+                    "repo": "batyrrasulov/Mabel",
+                    "path": "packages/skills/marketplace-demo",
+                    "visibility": "public",
+                },
                 description="Demo skill from GitHub.",
             )
         ]
@@ -644,6 +649,50 @@ def test_private_share_does_not_expose_custom_skill_to_non_owner(monkeypatch) ->
     viewer_list = client.get("/api/v1/skills", headers=viewer_headers)
     assert viewer_list.status_code == 200
     assert "skill.private-share-smoke" not in [row["id"] for row in viewer_list.json()["skills"]]
+
+
+def test_private_skill_direct_routes_enforce_visibility_and_ownership(monkeypatch) -> None:
+    monkeypatch.setenv("MABEL_STORE_MODE", "memory")
+    monkeypatch.setenv("MABEL_DB_URL", "")
+
+    from mabel_api.main import build_app
+
+    client = TestClient(build_app())
+    owner_headers = {"x-user-email": "owner@example.com", "x-user-id": "owner-1"}
+    viewer_headers = {"x-user-email": "viewer@example.com", "x-user-id": "viewer-1"}
+    created = client.post(
+        "/api/v1/skills",
+        headers=owner_headers,
+        json={
+            "id": "skill.owner-private",
+            "name": "Owner Private",
+            "owner_team": "owner@example.com",
+            "content_md": "# Owner Private\n\nSensitive operating instructions.",
+            "tags": [],
+            "mcp_bindings": [],
+        },
+    )
+    assert created.status_code == 200
+
+    assert client.get(
+        "/api/v1/skills/skill.owner-private",
+        headers=viewer_headers,
+    ).status_code == 404
+    assert client.patch(
+        "/api/v1/skills/skill.owner-private",
+        headers=viewer_headers,
+        json={"content_md": "tampered"},
+    ).status_code == 403
+    assert client.post(
+        "/api/v1/skills/skill.owner-private/run",
+        headers=viewer_headers,
+        json={"prompt": "Run it"},
+    ).status_code == 404
+    assert client.post(
+        "/api/v1/skills/skill.owner-private/share",
+        headers=viewer_headers,
+        json={"visibility": "public"},
+    ).status_code == 404
 
 
 def test_public_share_exposes_custom_skill_to_other_users(monkeypatch) -> None:

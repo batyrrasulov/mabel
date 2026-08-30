@@ -21,6 +21,10 @@ class MabelUser:
     def is_mabel_admin(self) -> bool:
         return "mabel-admins" in self.groups
 
+    @property
+    def is_mabel_scheduler(self) -> bool:
+        return self.is_mabel_admin or "mabel-schedulers" in self.groups
+
 
 def resolve_mabel_user(request: Request) -> MabelUser:
     mode = os.getenv("MABEL_AUTH_MODE", "development").strip().lower()
@@ -28,7 +32,7 @@ def resolve_mabel_user(request: Request) -> MabelUser:
         email = os.getenv("MABEL_DEV_USER_EMAIL", "developer@mabel.local").strip().lower()
         user_id = os.getenv("MABEL_DEV_USER_ID", email).strip()
         name = os.getenv("MABEL_DEV_USER_NAME", "Mabel Developer").strip()
-        groups = ("mabel-admins", "mabel-approvers")
+        groups = ("mabel-admins", "mabel-approvers", "mabel-schedulers")
         return MabelUser(email=email, user_id=user_id, name=name, groups=groups)
 
     if mode != "trusted_headers":

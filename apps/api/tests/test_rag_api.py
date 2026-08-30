@@ -56,3 +56,32 @@ def test_rag_search_reports_not_source_backed_on_no_hits() -> None:
     payload = rag.json()
     assert payload["source_backed"] is False
     assert payload["results"] == []
+
+
+def test_rag_search_does_not_expose_private_skills() -> None:
+    from mabel_api.main import build_app
+
+    client = TestClient(build_app())
+    owner = {"x-user-email": "owner@example.com", "x-user-id": "owner-1"}
+    viewer = {"x-user-email": "viewer@example.com", "x-user-id": "viewer-1"}
+    created = client.post(
+        "/api/v1/skills",
+        headers=owner,
+        json={
+            "id": "skill.private-rag",
+            "name": "Private RAG",
+            "owner_team": "owner@example.com",
+            "content_md": "# Private RAG\n\nconfidential-needle-7429",
+            "tags": [],
+            "mcp_bindings": [],
+        },
+    )
+    assert created.status_code == 200
+
+    response = client.post(
+        "/api/v1/rag/search",
+        headers=viewer,
+        json={"query": "confidential-needle-7429", "sources": ["skills"]},
+    )
+    assert response.status_code == 200
+    assert response.json()["results"] == []

@@ -10,6 +10,10 @@ HEADERS = {
     "x-user-email": "developer@mabel.local",
     "x-user-id": "developer-1",
 }
+ADMIN_HEADERS = {
+    **HEADERS,
+    "x-user-groups": "mabel-admins",
+}
 
 
 def test_local_registry_accepts_only_loopback_endpoints(monkeypatch) -> None:
@@ -94,6 +98,33 @@ def test_tool_scope_and_policy_are_explicit(monkeypatch) -> None:
     )
 
 
+def test_default_tool_policy_fails_closed_for_mutations(monkeypatch) -> None:
+    monkeypatch.setenv("MABEL_MCP_TOOL_POLICY_RULES_JSON", "[]")
+
+    from mabel_api.mcp.manager import evaluate_tool_policy
+    from mabel_api.settings import MabelSettings
+
+    settings = MabelSettings.load()
+    assert evaluate_tool_policy(
+        settings,
+        server_slug="github",
+        tool_name="github_get_issue",
+        scope="read",
+    ) == "allow"
+    assert evaluate_tool_policy(
+        settings,
+        server_slug="github",
+        tool_name="github_create_issue",
+        scope="create",
+    ) == "ask"
+    assert evaluate_tool_policy(
+        settings,
+        server_slug="github",
+        tool_name="github_delete_branch",
+        scope="delete",
+    ) == "deny"
+
+
 def test_tools_list_uses_local_connector_and_updates_snapshot(monkeypatch) -> None:
     monkeypatch.setenv(
         "MABEL_LOCAL_MCP_ENDPOINTS_JSON",
@@ -170,9 +201,16 @@ def test_disabled_connector_rejects_tool_call(monkeypatch) -> None:
     from mabel_api.main import build_app
 
     client = TestClient(build_app())
-    disabled = client.post(
+    forbidden = client.post(
         "/api/v1/mcp/github/state",
         headers=HEADERS,
+        json={"enabled": False},
+    )
+    assert forbidden.status_code == 403
+
+    disabled = client.post(
+        "/api/v1/mcp/github/state",
+        headers=ADMIN_HEADERS,
         json={"enabled": False},
     )
     assert disabled.status_code == 200
@@ -183,3 +221,50 @@ def test_disabled_connector_rejects_tool_call(monkeypatch) -> None:
         json={"name": "github_get_issue", "arguments": {"number": 1}},
     )
     assert response.status_code == 409
+
+
+def test_ask_policy_creates_approval_without_executing_tool(monkeypatch) -> None:
+    monkeypatch.setenv(
+        "MABEL_LOCAL_MCP_ENDPOINTS_JSON",
+        json.dumps({"github": "http://127.0.0.1:8111/mcp"}),
+    )
+    monkeypatch.setenv(
+        "MABEL_MCP_TOOL_POLICY_RULES_JSON",
+        json.dumps(
+            [
+                {
+                    "server": "github",
+                    "tool": "github_create_issue",
+                    "scope": "create",
+                    "decision": "ask",
+                }
+            ]
+        ),
+    )
+
+    from mabel_api.main import build_app
+    from mabel_api.mcp import manager
+
+    async def fail_if_called(**_kwargs):
+        raise AssertionError("ask policy must not execute before approval")
+
+    monkeypatch.setattr(manager, "post_mcp_json", fail_if_called)
+    client = TestClient(build_app())
+    response = client.post(
+        "/api/v1/mcp/github/tools/call",
+        headers=HEADERS,
+        json={
+            "name": "github_create_issue",
+            "arguments": {"title": "Approval test"},
+        },
+    )
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["message"] == "approval required"
+    assert detail["approval_id"].startswith("approval_")
+
+    bootstrap = client.get("/api/v1/bootstrap", headers=HEADERS)
+    approvals = bootstrap.json()["approvals"]
+    assert len(approvals) == 1
+    assert approvals[0]["id"] == detail["approval_id"]

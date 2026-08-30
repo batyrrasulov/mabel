@@ -440,7 +440,7 @@ function HtmlRenderer({ blob, showCode }: { blob: Blob; showCode: boolean }) {
       </div>
     );
   }
-  return <iframe className="mabel-file-preview__office-frame" title="HTML preview" sandbox="allow-scripts" srcDoc={html} />;
+  return <iframe className="mabel-file-preview__office-frame" title="HTML preview" sandbox="" srcDoc={html} />;
 }
 
 function wrapHtmlForPreview(rawHtml: string): string {

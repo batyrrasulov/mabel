@@ -11,7 +11,7 @@ from ..catalog import connector_is_enabled, resolve_connector_snapshot, set_all_
 from ..db import get_store
 from ..mcp import manager
 from ..mcp.tool_display import normalize_mcp_tools_for_display
-from ..models import ConnectorSnapshot
+from ..models import Approval, ConnectorSnapshot
 from ..schemas import ConnectorStateRequest, McpToolCallRequest
 
 router = APIRouter(prefix="/api/v1/mcp", tags=["mcp"])
@@ -195,7 +195,15 @@ def _connector_readiness(settings, server_slug: str) -> dict:
     }
 
 
-async def execute_mcp_tool(settings, request: Request, server_slug: str, name: str, arguments: dict) -> dict:
+async def execute_mcp_tool(
+    settings,
+    request: Request,
+    server_slug: str,
+    name: str,
+    arguments: dict,
+    *,
+    policy_approved: bool = False,
+) -> dict:
     server_slug = _canonical_slug(server_slug)
     if _connector_disabled(settings, server_slug):
         raise HTTPException(status_code=409, detail=f"connector {server_slug} is disabled")
@@ -213,6 +221,8 @@ async def execute_mcp_tool(settings, request: Request, server_slug: str, name: s
     decision = manager.evaluate_tool_policy(settings, server_slug=server_slug, tool_name=name, scope=scope)
     if decision == "deny":
         raise HTTPException(status_code=403, detail=f"policy denied tool call {name}")
+    if decision == "ask" and not policy_approved:
+        raise HTTPException(status_code=409, detail="approval required")
     if snapshot is not None and snapshot.connection_status in {"local_package_available", "connected"}:
         stdio_response = await manager.post_mcp_stdio_json(
             server_slug=server_slug,
@@ -375,7 +385,9 @@ async def tools_list(server_slug: str, request: Request) -> dict:
 @router.post("/sync")
 async def sync_connectors(request: Request) -> dict:
     settings = request.app.state.settings
-    resolve_mabel_user(request)
+    user = resolve_mabel_user(request)
+    if not user.is_mabel_admin:
+        raise HTTPException(status_code=403, detail="connector administration requires mabel-admins")
     store = get_store(settings)
     snapshots = [row for row in store.list_connectors() if row.server_slug != "skills" and row.enabled is not False]
 
@@ -508,7 +520,9 @@ async def sync_connectors(request: Request) -> dict:
 def set_connector_state(server_slug: str, payload: ConnectorStateRequest, request: Request) -> dict:
     server_slug = _canonical_slug(server_slug)
     settings = request.app.state.settings
-    resolve_mabel_user(request)
+    user = resolve_mabel_user(request)
+    if not user.is_mabel_admin:
+        raise HTTPException(status_code=403, detail="connector administration requires mabel-admins")
     store = get_store(settings)
     snapshot = set_all_connector_enabled(store, server_slug, payload.enabled)
     if snapshot is None:
@@ -535,7 +549,7 @@ def connector_readiness(server_slug: str, request: Request) -> dict:
 async def tools_call(server_slug: str, payload: McpToolCallRequest, request: Request) -> dict:
     server_slug = _canonical_slug(server_slug)
     settings = request.app.state.settings
-    actor = resolve_mabel_user(request).email
+    user = resolve_mabel_user(request)
     try:
         normalized_args = manager.normalize_tool_arguments(payload.arguments)
         manager.enforce_tool_call_policy(settings, payload.name, normalized_args)
@@ -552,5 +566,25 @@ async def tools_call(server_slug: str, payload: McpToolCallRequest, request: Req
     )
     if decision == "deny":
         raise HTTPException(status_code=403, detail=f"policy denied tool call {payload.name}")
+    if decision == "ask":
+        approval = get_store(settings).create_approval(
+            Approval(
+                id=f"approval_{uuid.uuid4().hex}",
+                status="pending",
+                title=f"Approve {payload.name}",
+                summary=f"Mabel requires approval for a {scope} action on {server_slug}.",
+                requested_by=user.email,
+                payload={
+                    "server_slug": server_slug,
+                    "tool_name": payload.name,
+                    "arguments": normalized_args,
+                    "scope": scope,
+                },
+            )
+        )
+        raise HTTPException(
+            status_code=409,
+            detail={"message": "approval required", "approval_id": approval.id},
+        )
 
     return await execute_mcp_tool(settings, request, server_slug, payload.name, normalized_args)

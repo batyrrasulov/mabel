@@ -323,6 +323,8 @@ def _execute_scheduled_task(*, task: ScheduledTask, store, settings, user: Mabel
 def run_due_scheduled_tasks(request: Request) -> dict:
     settings = request.app.state.settings
     user = resolve_mabel_user(request)
+    if not user.is_mabel_scheduler:
+        raise HTTPException(status_code=403, detail="scheduler role required")
     store = get_store(settings)
     seed_builtin_catalog(store, settings)
     due_tasks = store.list_due_scheduled_tasks(utcnow())

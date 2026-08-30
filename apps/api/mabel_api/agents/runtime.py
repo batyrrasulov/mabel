@@ -34,7 +34,7 @@ from ..catalog import (
 from ..db import get_store
 from ..mcp import manager
 from ..mcp.tool_response_compact import truncate_mcp_tool_response_for_agent
-from ..models import ConnectorSnapshot, MabelDocument, MabelMemoryItem, ScheduledTask, Skill, StarterPack, utcnow
+from ..models import Approval, ConnectorSnapshot, MabelDocument, MabelMemoryItem, ScheduledTask, Skill, StarterPack, utcnow
 from ..settings import MabelSettings
 
 
@@ -191,6 +191,8 @@ def build_mabel_workspace_context_payload(
                 "role_key": pack.role_key,
             }
             for pack in store.list_starter_packs()
+            if not pack.id.startswith("workflow-pack.custom")
+            or (viewer_email and pack.owner_team.strip().lower() == viewer_email.strip().lower())
         ],
     }
 
@@ -1079,6 +1081,11 @@ async def run_openai_agents_stream(
                         "approve": False,
                         "reason": "Mabel policy denied this MCP action.",
                     }
+                if decision == "ask":
+                    return {
+                        "approve": False,
+                        "reason": "Mabel policy requires an explicit approval record.",
+                    }
                 return {"approve": True}
 
             base = settings.remote_gateway_api_base_url.rstrip("/")
@@ -1253,7 +1260,13 @@ async def run_openai_agents_stream(
             if skill_is_launch_ready(skill, ready_slugs)
         }
         pack = next((row for row in store.list_starter_packs() if row.id == starter_pack_id), None)
-        if pack is None:
+        viewer_email = str((user_identity or {}).get("email") or "").strip().lower()
+        private_custom_pack = bool(
+            pack
+            and pack.id.startswith("workflow-pack.custom")
+            and pack.owner_team.strip().lower() != viewer_email
+        )
+        if pack is None or private_custom_pack:
             return _compact_for_agent_session(
                 {"status": "not_found", "starter_pack_id": starter_pack_id},
                 max_chars=int(settings.catalog_tool_payload_max_chars),
@@ -1833,6 +1846,50 @@ async def run_openai_agents_stream(
             return {"status": "blocked", "server_slug": server_slug, "tool_name": tool_name, "message": str(exc)}
         except ValueError as exc:
             return {"status": "invalid_request", "server_slug": server_slug, "tool_name": tool_name, "message": str(exc)}
+        scope = manager.infer_tool_scope(tool_name)
+        decision = manager.evaluate_tool_policy(
+            settings,
+            server_slug=server_slug,
+            tool_name=tool_name,
+            scope=scope,
+        )
+        if decision == "deny":
+            return {
+                "status": "blocked",
+                "server_slug": server_slug,
+                "tool_name": tool_name,
+                "message": "Mabel policy denied this MCP action.",
+            }
+        if decision == "ask":
+            requester = str((user_identity or {}).get("email") or "").strip().lower()
+            if not requester:
+                return {
+                    "status": "blocked",
+                    "server_slug": server_slug,
+                    "tool_name": tool_name,
+                    "message": "User identity is required for approval.",
+                }
+            approval = store.create_approval(
+                Approval(
+                    id=f"approval_{uuid.uuid4().hex}",
+                    status="pending",
+                    title=f"Approve {tool_name}",
+                    summary=f"Mabel requires approval for a {scope} action on {server_slug}.",
+                    requested_by=requester,
+                    payload={
+                        "server_slug": server_slug,
+                        "tool_name": tool_name,
+                        "arguments": arguments,
+                        "scope": scope,
+                    },
+                )
+            )
+            return {
+                "status": "approval_required",
+                "approval_id": approval.id,
+                "server_slug": server_slug,
+                "tool_name": tool_name,
+            }
         try:
             existing = resolve_connector_snapshot(store, server_slug)
             identity_headers = _identity_headers(user_identity)

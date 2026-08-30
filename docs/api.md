@@ -311,6 +311,10 @@ The API validates:
 - serialized argument limit
 - transport availability
 
+The fallback policy allows reads, creates an approval request for create/update
+operations, and denies delete/admin/unknown operations. A policy decision of
+`ask` returns `409` with an approval ID without invoking the connector.
+
 ### `POST /api/v1/mcp/sync`
 
 Refreshes enabled connector snapshots.
@@ -412,7 +416,7 @@ Supported schedule kinds:
 - `evening`
 
 Multi-worker production deployments need an atomic claim or lease around
-`run-due`.
+`run-due`. Calling this endpoint requires `mabel-schedulers` or `mabel-admins`.
 
 ## Approvals
 
@@ -422,9 +426,10 @@ Creates a pending approval record.
 
 ### `POST /api/v1/approvals/{approval_id}/decision`
 
-Approves, rejects, or dismisses a pending request. The exact actor, tool,
-arguments, expiry, and idempotency contract should be strengthened before
-high-risk production mutations.
+Approves, rejects, or dismisses a pending request. Approval requires a separate
+member of `mabel-approvers`; requesters cannot approve their own action. The
+exact arguments hash, expiry, and idempotency contract should be strengthened
+before high-risk production mutations.
 
 ## Usage and administration
 

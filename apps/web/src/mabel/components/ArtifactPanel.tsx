@@ -92,7 +92,7 @@ export function ArtifactPanel({ artifact, theme, onClose }: ArtifactPanelProps) 
             className="mabel-artifact__preview"
             title="Artifact preview"
             srcDoc={artifact.value}
-            sandbox="allow-scripts"
+            sandbox=""
             referrerPolicy="no-referrer"
           />
         ) : (

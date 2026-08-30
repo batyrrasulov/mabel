@@ -334,17 +334,9 @@ function SourceChip({ source }: { source: MabelSource }) {
 function SourceFavicon({ url }: { url: string }) {
   const host = hostFromUrl(url);
   return (
-    <img
-      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`}
-      alt=""
-      width={14}
-      height={14}
-      className="mabel-steps__favicon"
-      loading="lazy"
-      onError={(e) => {
-        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-      }}
-    />
+    <span className="mabel-steps__favicon" aria-hidden="true">
+      {host.charAt(0).toUpperCase()}
+    </span>
   );
 }
 

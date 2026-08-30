@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from ..auth import resolve_mabel_user
+from ..catalog import mabel_visible_skills
 from ..db import get_store
 from .memory import _cosine_similarity, _embed_text
 
@@ -111,7 +112,12 @@ def search(payload: RagSearchRequest, request: Request) -> dict:
             )
 
     if source_allowed("skills"):
-        for skill in store.list_skills():
+        for skill in mabel_visible_skills(
+            store.list_skills(),
+            viewer_email=user.email,
+            viewer_is_approver=user.is_mabel_approver,
+            viewer_is_admin=user.is_mabel_admin,
+        ):
             content = f"{skill.name}\n{skill.id}\n{skill.owner_team}\n{skill.content_md}"
             rank = _score(content, query_tokens)
             if rank <= 0:

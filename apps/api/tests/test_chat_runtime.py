@@ -1487,7 +1487,10 @@ def test_runtime_adds_remote_gateway_hosted_mcp_tools_when_configured(monkeypatc
     approval = hosted[0].on_approval_request(type("Req", (), {"data": type("Data", (), {"name": "list_accounts"})()})())
     assert approval == {"approve": True}
     mutating = hosted[0].on_approval_request(type("Req", (), {"data": type("Data", (), {"name": "update_account"})()})())
-    assert mutating == {"approve": True}
+    assert mutating == {
+        "approve": False,
+        "reason": "Mabel policy requires an explicit approval record.",
+    }
 
 
 def test_uploads_endpoint_persists_file_and_serves_back(monkeypatch, tmp_path) -> None:

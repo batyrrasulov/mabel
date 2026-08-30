@@ -120,6 +120,13 @@ def test_create_workflow_persists_new_pack(monkeypatch) -> None:
     packs = bootstrap.json().get("starter_packs") or []
     assert any(item["id"] == pack["id"] for item in packs)
 
+    foreign_run = client.post(
+        f"/api/v1/workflows/{pack['id']}/run",
+        headers=_headers("other@example.com", "other-1"),
+        json={"objective": "Run another user's workflow", "dry_run": True},
+    )
+    assert foreign_run.status_code == 404
+
 
 def test_created_workflow_run_exposes_agent_loop_plan(monkeypatch) -> None:
     monkeypatch.setenv("MABEL_STORE_MODE", "memory")

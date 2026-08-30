@@ -133,7 +133,11 @@ def test_bootstrap_keeps_disabled_connectors_visible_for_reenable(monkeypatch) -
     from mabel_api.main import build_app
 
     client = TestClient(build_app())
-    headers = {"x-user-email": "agent@example.com", "x-user-id": "agent-1"}
+    headers = {
+        "x-user-email": "admin@example.com",
+        "x-user-id": "admin-1",
+        "x-user-groups": "mabel-admins",
+    }
 
     disable_response = client.post("/api/v1/mcp/local-example/state", headers=headers, json={"enabled": False})
     assert disable_response.status_code == 200

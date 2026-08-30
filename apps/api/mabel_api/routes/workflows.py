@@ -660,6 +660,12 @@ def run_workflow(starter_pack_id: str, payload: WorkflowRunRequest, request: Req
     starter_pack = next((pack for pack in store.list_starter_packs() if pack.id == starter_pack_id), None)
     if starter_pack is None:
         raise HTTPException(status_code=404, detail="starter pack not found")
+    if (
+        starter_pack.id.startswith("workflow-pack.custom")
+        and starter_pack.owner_team.strip().lower() != user.email.strip().lower()
+        and not user.is_mabel_admin
+    ):
+        raise HTTPException(status_code=404, detail="starter pack not found")
 
     ready_connectors = {row.server_slug for row in launch_ready_connector_snapshots(store)}
     available_skills = {row.id for row in launch_ready_skills(store)}

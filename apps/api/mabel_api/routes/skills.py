@@ -11,6 +11,7 @@ from ..catalog import (
     CUSTOM_SKILL_SOURCE_TYPES,
     SkillOwnerAssignmentError,
     is_privileged_skill_actor,
+    mabel_skill_is_visible,
     normalize_skill_status,
     mabel_visible_skill_search_results,
     mabel_visible_skills,
@@ -58,6 +59,26 @@ def _skill_payload(row: Skill, *, include_content: bool = False) -> dict:
 
 def _github_token_configured(settings) -> bool:
     return bool(settings.skills_github_token or settings.github_token)
+
+
+def _skill_visible_to_user(skill: Skill, user) -> bool:
+    return mabel_skill_is_visible(
+        skill,
+        viewer_email=user.email,
+        viewer_is_approver=user.is_mabel_approver,
+        viewer_is_admin=user.is_mabel_admin,
+    )
+
+
+def _assert_skill_owner_or_privileged(skill: Skill, user) -> None:
+    privileged = is_privileged_skill_actor(
+        is_mabel_approver=user.is_mabel_approver,
+        is_mabel_admin=user.is_mabel_admin,
+    )
+    if privileged:
+        return
+    if (skill.owner_team or "").strip().lower() != user.email.strip().lower():
+        raise HTTPException(status_code=403, detail="only the skill owner can modify this skill")
 
 
 def _marketplace_entries(settings) -> tuple[list[SkillRegistryEntry], str, str | None]:
@@ -230,9 +251,9 @@ def sync_skill_marketplace(payload: SkillMarketplaceSyncRequest, request: Reques
 @router.get("/{skill_id:path}")
 def skill_detail(skill_id: str, request: Request) -> dict:
     settings = request.app.state.settings
-    resolve_mabel_user(request)
+    user = resolve_mabel_user(request)
     skill = get_store(settings).get_skill(skill_id)
-    if skill is None:
+    if skill is None or not _skill_visible_to_user(skill, user):
         raise HTTPException(status_code=404, detail="skill not found")
     return {"skill": _skill_payload(skill, include_content=True)}
 
@@ -240,16 +261,25 @@ def skill_detail(skill_id: str, request: Request) -> dict:
 @router.patch("/{skill_id:path}")
 def update_skill(skill_id: str, payload: SkillUpdateRequest, request: Request) -> dict:
     settings = request.app.state.settings
-    resolve_mabel_user(request)
+    user = resolve_mabel_user(request)
     store = get_store(settings)
     skill = store.get_skill(skill_id)
     if skill is None:
         raise HTTPException(status_code=404, detail="skill not found")
+    _assert_skill_owner_or_privileged(skill, user)
 
     if payload.name is not None:
         skill.name = payload.name
     if payload.owner_team is not None:
-        skill.owner_team = payload.owner_team
+        privileged = is_privileged_skill_actor(
+            is_mabel_approver=user.is_mabel_approver,
+            is_mabel_admin=user.is_mabel_admin,
+        )
+        skill.owner_team = resolve_skill_owner_team(
+            payload.owner_team,
+            requester_email=user.email,
+            requester_is_privileged=privileged,
+        )
     if payload.content_md is not None:
         skill.content_md = payload.content_md
     if payload.tags is not None:
@@ -273,6 +303,7 @@ def delete_skill(skill_id: str, request: Request) -> dict:
     skill = store.get_skill(skill_id)
     if skill is None:
         raise HTTPException(status_code=404, detail="skill not found")
+    _assert_skill_owner_or_privileged(skill, user)
     prior_source = skill.source if isinstance(skill.source, dict) else {}
     prior_type = str(prior_source.get("type") or "").strip().lower()
     if prior_type not in CUSTOM_SKILL_SOURCE_TYPES:
@@ -295,8 +326,9 @@ def share_skill(skill_id: str, payload: SkillShareRequest, request: Request) -> 
     user = resolve_mabel_user(request)
     store = get_store(settings)
     skill = store.get_skill(skill_id)
-    if skill is None:
+    if skill is None or not _skill_visible_to_user(skill, user):
         raise HTTPException(status_code=404, detail="skill not found")
+    _assert_skill_owner_or_privileged(skill, user)
     try:
         result = GitHubSkillRegistry(settings).push_skill(
             skill,
@@ -351,7 +383,7 @@ async def run_skill(skill_id: str, payload: SkillRunRequest, request: Request) -
     user = resolve_mabel_user(request)
     store = get_store(settings)
     skill = store.get_skill(skill_id)
-    if skill is None:
+    if skill is None or not _skill_visible_to_user(skill, user):
         raise HTTPException(status_code=404, detail="skill not found")
 
     prompt = payload.prompt.strip() or f"Run {skill.name} and summarize outcomes."

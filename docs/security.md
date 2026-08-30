@@ -64,7 +64,9 @@ explicit gateway. Tool requests are checked against:
 - tool-name blocklist
 - serialized argument limit
 
-For production, use a fail-closed rule set. Example:
+The built-in fallback allows reads, requires approval for create/update, and
+denies delete/admin/unknown operations. Production deployments should still use
+an explicit reviewed rule set. Example:
 
 ```json
 [
@@ -149,6 +151,78 @@ personal or confidential data. Before production:
 - expose user export and deletion
 - document provider subprocessors
 - add immutable security audit events for controlled actions
+
+## Known limitations and required hardening
+
+**Do not deploy to production without addressing these gaps:**
+
+### Backend authorization
+
+1. **Scheduled task execution is not isolated** (`routes/scheduled.py:322-333`)
+   - Any authenticated user can invoke `/api/v1/scheduled/run-due`, executing all due tasks under their owner's identity.
+   - **Fix:** Restrict to a dedicated scheduler principal using signed service authentication; never accept interactive users as the execution identity.
+
+2. **Skills lack ownership enforcement** (`routes/skills.py`)
+   - Detail, update, run endpoints do not validate skill ownership or access.
+   - Any authenticated user can read, modify, or execute any known skill.
+   - **Fix:** Add `_assert_resource_owner_or_admin()` checks on all mutation routes.
+
+3. **RAG search exposes all skill content** (`routes/rag.py:112-127`)
+   - Search iterates all skills regardless of visibility or ownership.
+   - **Fix:** Filter results through `relay_skill_is_visible()` and user access checks.
+
+4. **Workflow packs are not access-controlled** (`routes/workflows.py`)
+   - Any authenticated user can run any workflow pack or starter pack.
+   - **Fix:** Enforce owner/team membership; add visibility checks.
+
+5. **Document ownership validation is missing** (`routes/documents.py:43-105`)
+   - Create/update accept arbitrary `conversation_id` without existence or ownership checks.
+   - Database has no foreign-key constraint.
+   - **Fix:** Validate conversation exists and is owned by the user.
+
+6. **Approval policy is not enforced** (`mcp/manager.py`, `routes/mcp.py`)
+   - `requires_approval()` always returns false.
+   - Policy decision `ask` executes immediately instead of blocking.
+   - Users can create self-approving payloads.
+   - **Fix:** Require explicit approval from a separate authorized principal before tool execution.
+
+7. **Connector state is global, not tenant-isolated**
+   - Enabling/disabling/syncing connectors affects all users.
+   - Shared cached tools and credentials create cross-user leakage.
+   - **Fix:** Scope connectors by tenant/user; implement per-user token storage.
+
+8. **Browser identity headers are trusted by default**
+   - Frontend can set `X-User-Email`, `X-User-Name`, `X-User-Id` without authentication.
+   - `MABEL_TRUST_EDGE_IDENTITY_HEADERS` disables local validation but is easy to enable accidentally.
+   - **Fix:** Require mutable headers to pass through a signed edge proxy only; make development mode reject direct header spoofing.
+
+### Frontend authorization and safety
+
+9. **Connector test calls execute write tools without confirmation**
+   - `ConnectorsPage.tsx` auto-fills tool arguments with empty/default values and submits.
+   - No scope classification or user confirmation gate exists.
+   - **Fix:** Require explicit confirmation for write-like tools; implement scope-aware UI gating.
+
+10. **Generated HTML artifacts execute scripts**
+    - `ArtifactPanel.tsx` and `RelayFilePreviewPanel.tsx` use `sandbox="allow-scripts"`.
+    - Iframes can make outbound network requests.
+    - **Fix:** Remove `allow-scripts` by default; use restrictive CSP and same-origin policy.
+
+11. **Favicon URLs disclose source domains to Google**
+    - `MessageSources.tsx` and `MessageSteps.tsx` fetch `google.com/s2/favicons`.
+    - **Fix:** Remove external favicon requests or cache locally.
+
+### Persistence and operations
+
+12. **Dual state (normalized + JSONB) creates consistency gaps**
+    - Every operation reloads and rewrites the global `relay_v2_state` row.
+    - Serialization, contention, stale-state, and scaling risks.
+    - **Fix:** Choose one state storage (normalized or JSONB); implement versioned migrations.
+
+13. **SQLiteSession is not multi-replica safe**
+    - Local-node storage with no shared session backend.
+    - Requires sticky routing or replacement.
+    - **Fix:** Migrate to PostgreSQL or Redis for agent session history.
 
 ## Reporting vulnerabilities
 

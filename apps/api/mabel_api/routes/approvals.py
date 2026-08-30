@@ -57,7 +57,10 @@ async def decide_approval(approval_id: str, payload: ApprovalDecisionRequest, re
         raise HTTPException(status_code=404, detail="approval not found")
     if approval.status != "pending":
         raise HTTPException(status_code=409, detail="approval is already decided")
-    if approval.requested_by != actor and not user.is_mabel_approver:
+    if payload.decision == "approved":
+        if approval.requested_by == actor or not user.is_mabel_approver:
+            raise HTTPException(status_code=403, detail="approval requires a separate approver")
+    elif approval.requested_by != actor and not user.is_mabel_approver:
         raise HTTPException(status_code=403, detail="approval decision not permitted")
 
     approval.status = payload.decision
@@ -70,7 +73,14 @@ async def decide_approval(approval_id: str, payload: ApprovalDecisionRequest, re
         tool_name = approval.payload.get("tool_name")
         arguments = approval.payload.get("arguments") or {}
         if isinstance(server_slug, str) and isinstance(tool_name, str) and isinstance(arguments, dict):
-            executed = await execute_mcp_tool(settings, request, server_slug, tool_name, arguments)
+            executed = await execute_mcp_tool(
+                settings,
+                request,
+                server_slug,
+                tool_name,
+                arguments,
+                policy_approved=True,
+            )
             approval.payload = {**approval.payload, "execution_result": executed}
     updated = store.update_approval(approval)
     response = {"approval": _approval_payload(updated)}

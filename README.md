@@ -67,6 +67,38 @@ Mabel currently includes:
 - health and normalization diagnostics
 - Docker and local-development workflows
 
+## ⚠️ Security and production readiness
+
+**Mabel is not currently production-ready. Before deploying to any multi-user or internet-facing environment, address the 13 known authorization, policy, and persistence gaps documented in [docs/security.md](docs/security.md).**
+
+Critical issues that must be fixed:
+
+**Backend authorization (6 issues):**
+- Scheduled task execution allows arbitrary user impersonation
+- Skills, workflows, and documents lack ownership checks
+- RAG search exposes all skill content
+- Approval policy is not enforced (tool calls execute immediately)
+- Connector state is global, not tenant-isolated
+- Browser identity headers are trusted by default
+
+**Frontend safety (3 issues):**
+- Connector test calls can execute write tools without confirmation
+- Generated HTML artifacts execute scripts with network access
+- Favicon requests disclose source domains to Google
+
+**Persistence (2 issues):**
+- Dual state (normalized + JSONB) creates consistency gaps and scaling limits
+- SQLiteSession is not multi-replica safe
+
+**Details, impact, and mitigation strategies are in [docs/security.md](docs/security.md).**
+
+Development and local testing are safe. Multi-user or production deployments require:
+- explicit hardening of all 13 gaps
+- your own identity provider and OIDC flow
+- removal of development auth modes
+- tenant isolation on every data row
+- reviewed tool policies and connector manifests
+
 Evidence language in this repository is deliberate:
 
 - **Implemented**: present in source and covered by a local test or build.
@@ -534,7 +566,8 @@ Security defaults and requirements:
 - data access is owner-scoped in application routes
 - development identity mode must not be exposed publicly
 - trusted-header identity requires a proxy that strips unverified headers
-- mutating connector policy should be configured fail-closed for production
+- connector policy allows reads, requires approval for create/update, and denies
+  delete/admin/unknown operations by default
 
 See [docs/security.md](docs/security.md) before any internet-facing deployment.
 
@@ -558,8 +591,8 @@ npm audit --omit=dev
 
 Current local evidence:
 
-- API: 106 passing tests
-- web: 50 passing tests
+- API: 111 passing tests
+- web: 51 passing tests
 - TypeScript: strict no-emit check passes
 - production web bundle: builds successfully
 - production npm dependency audit: zero known vulnerabilities

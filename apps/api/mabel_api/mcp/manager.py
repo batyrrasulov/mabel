@@ -142,11 +142,8 @@ def infer_tool_scope(tool_name: str) -> str:
     return "unknown"
 
 
-def requires_approval(_scope: str) -> bool:
-    """Mabel chat and REST MCP calls run as the authenticated user; gating every
-    non-read tool behind a separate approval record was high-friction UX. Policy
-    rules (MABEL_MCP_TOOL_POLICY_RULES_JSON) can still ``deny`` or ``ask``."""
-    return False
+def requires_approval(scope: str) -> bool:
+    return scope.strip().lower() in {"create", "update"}
 
 
 def normalize_tool_arguments(arguments: dict[str, Any] | Any) -> dict[str, Any]:
@@ -196,9 +193,10 @@ def evaluate_tool_policy(
 ) -> str:
     """Ordered allow|ask|deny policy engine.
 
-    Rules are read from MABEL_MCP_TOOL_POLICY_RULES_JSON:
-    [{"action":"read|create|*","resource":"server/tool-glob","decision":"allow|ask|deny"}]
-    First match wins. Default when no rule matches: allow (authenticated Mabel user).
+    Rules are read from MABEL_MCP_TOOL_POLICY_RULES_JSON. They may use
+    ``action``/``resource`` or ``scope``/``server``/``tool`` fields. First match
+    wins. The fallback allows reads, asks for create/update, and denies
+    delete/admin/unknown operations.
     """
     try:
         raw_rules = json.loads(settings.mcp_tool_policy_rules_json or "[]")
@@ -210,9 +208,13 @@ def evaluate_tool_policy(
     for row in raw_rules:
         if not isinstance(row, dict):
             continue
-        action = str(row.get("action") or "*").strip().lower()
+        action = str(row.get("action") or row.get("scope") or "*").strip().lower()
         decision = str(row.get("decision") or "").strip().lower()
-        pattern = str(row.get("resource") or row.get("resource_pattern") or "*").strip()
+        pattern = str(row.get("resource") or row.get("resource_pattern") or "").strip()
+        if not pattern:
+            server_pattern = str(row.get("server") or "*").strip()
+            tool_pattern = str(row.get("tool") or "*").strip()
+            pattern = f"{server_pattern}/{tool_pattern}"
         if decision not in {"allow", "ask", "deny"}:
             continue
         if action not in {"*", scope.lower()}:
@@ -220,8 +222,15 @@ def evaluate_tool_policy(
         if not fnmatch(resource, pattern):
             continue
         return decision
-    # Default: allow for authenticated Mabel users; use policy rules to deny or ask.
-    return "allow"
+    fallback = {
+        "read": "allow",
+        "create": "ask",
+        "update": "ask",
+        "delete": "deny",
+        "admin": "deny",
+        "unknown": "deny",
+    }
+    return fallback.get(scope.strip().lower(), "deny")
 
 
 def resolve_mcp_endpoint_candidates(settings: MabelSettings, server_slug: str) -> list[tuple[str, dict[str, str], bool]]:

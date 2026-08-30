@@ -46,7 +46,7 @@ def test_pending_approvals_are_user_scoped(monkeypatch) -> None:
     assert other_bootstrap.json()["approvals"] == []
 
 
-def test_only_requester_or_mabel_approver_can_decide(monkeypatch) -> None:
+def test_only_separate_mabel_approver_can_approve(monkeypatch) -> None:
     
     from mabel_api.main import build_app
 
@@ -57,6 +57,13 @@ def test_only_requester_or_mabel_approver_can_decide(monkeypatch) -> None:
         json={"title": "Approve write", "summary": "Needs review", "payload": {"scope": "create"}},
     )
     approval_id = create.json()["approval"]["id"]
+
+    self_approval = client.post(
+        f"/api/v1/approvals/{approval_id}/decision",
+        headers=_headers("requester@example.com", "requester-1"),
+        json={"decision": "approved", "reason": "self approval"},
+    )
+    assert self_approval.status_code == 403
 
     forbidden = client.post(
         f"/api/v1/approvals/{approval_id}/decision",

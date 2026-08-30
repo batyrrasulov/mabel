@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mabel-api"
 version = "0.1.0"
-description = "Mabel OpenAI Agents gateway API"
+description = "Mabel v2 OpenAI Agents gateway API"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<0.116",

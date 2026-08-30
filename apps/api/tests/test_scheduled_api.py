@@ -162,7 +162,14 @@ def test_scheduled_due_runner_executes_due_active_tasks(monkeypatch) -> None:
     task.next_run_at = utcnow() - timedelta(minutes=5)
     store.update_scheduled_task(task)
 
-    due = client.post("/api/v1/scheduled/run-due", headers=headers)
+    forbidden = client.post("/api/v1/scheduled/run-due", headers=headers)
+    assert forbidden.status_code == 403
+
+    scheduler_headers = {
+        **headers,
+        "x-user-groups": "mabel-schedulers",
+    }
+    due = client.post("/api/v1/scheduled/run-due", headers=scheduler_headers)
     assert due.status_code == 200
     payload = due.json()
     assert payload["due_count"] == 1

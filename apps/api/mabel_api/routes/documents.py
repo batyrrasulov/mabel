@@ -24,6 +24,14 @@ def _serialize_document(document: MabelDocument) -> dict:
     }
 
 
+def _validate_conversation_link(store, user_email: str, conversation_id: int | None) -> None:
+    if conversation_id is None:
+        return
+    conversation = store.get_conversation(conversation_id)
+    if conversation is None or conversation.user_email != user_email:
+        raise HTTPException(status_code=404, detail="conversation not found")
+
+
 @router.get("/documents")
 def list_documents(request: Request) -> dict:
     settings = request.app.state.settings
@@ -45,6 +53,7 @@ def create_document(payload: DocumentCreateRequest, request: Request) -> dict:
     settings = request.app.state.settings
     user = resolve_mabel_user(request)
     store = get_store(settings)
+    _validate_conversation_link(store, user.email, payload.conversation_id)
     document = store.create_document(
         MabelDocument(
             id=f"doc_{uuid.uuid4().hex[:12]}",
@@ -99,6 +108,7 @@ def update_document(document_id: str, payload: DocumentUpdateRequest, request: R
     if payload.content is not None:
         document.content = payload.content
     if payload.conversation_id is not None:
+        _validate_conversation_link(store, user.email, payload.conversation_id)
         document.conversation_id = payload.conversation_id
 
     updated = store.update_document(document)

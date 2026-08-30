@@ -156,6 +156,13 @@ function canInspectTools(connector: MabelBootstrap["connectors"][number]): boole
   );
 }
 
+function isReadOnlyTool(toolName: string): boolean {
+  const operation = toolName.trim().toLowerCase().split(/[_-]+/).find((part) =>
+    ["get", "list", "search", "find", "read", "describe", "count", "lookup", "health"].includes(part),
+  );
+  return Boolean(operation);
+}
+
 function connectorDescription(connector: MabelBootstrap["connectors"][number]): string {
   const descriptions: Record<string, string> = {
     asana: "Official connector to access Asana projects, tasks, and workflows via AI tools.",
@@ -263,7 +270,7 @@ export function ConnectorsPage({ bootstrap, onRefresh, onRefreshBootstrap, onUse
       <header className="mabel-page__head">
         <div className="mabel-page__title">
           <h1>Connectors</h1>
-          <p>MCP servers Mabel can call. Toggle availability, inspect tools, and test calls.</p>
+          <p>MCP servers Mabel can call. Toggle availability, inspect tools, and read-only test calls.</p>
         </div>
         <div className="mabel-page__actions">
           <input
@@ -386,16 +393,17 @@ export function ConnectorsPage({ bootstrap, onRefresh, onRefreshBootstrap, onUse
                                     {toolCallFeedback[callKey].label}
                                   </span>
                                 ) : null}
+                                {isReadOnlyTool(toolName) ? (
                                 <button
                                   type="button"
                                   className="mabel-button mabel-button--ghost"
                                   disabled={!tool.name || !!toolCallBusy[callKey] || connector.enabled === false}
                                   title={
                                     connector.enabled === false
-                                      ? "Enable this connector before running test calls"
+                                      ? "Enable this connector before running read-only test calls"
                                       : toolSourceBySlug[connector.id] === "cache"
-                                      ? "Connector is offline; reconnect to run live test calls"
-                                      : "Call this tool with auto-filled required arguments"
+                                      ? "Connector is offline; reconnect to run live read-only test calls"
+                                      : "Call this read-only tool with auto-filled required arguments"
                                   }
                                   onClick={async () => {
                                     const toolName = tool.name || "";
@@ -403,7 +411,7 @@ export function ConnectorsPage({ bootstrap, onRefresh, onRefreshBootstrap, onUse
                                     if (connector.enabled === false) {
                                       setErrors((prev) => ({
                                         ...prev,
-                                        [connector.id]: "Connector is disabled. Enable it before running test calls.",
+                                        [connector.id]: "Connector is disabled. Enable it before running read-only test calls.",
                                       }));
                                       return;
                                     }
@@ -466,8 +474,9 @@ export function ConnectorsPage({ bootstrap, onRefresh, onRefreshBootstrap, onUse
                                     }
                                   }}
                                 >
-                                  {toolCallBusy[callKey] ? "Calling…" : "Test call"}
+                                  {toolCallBusy[callKey] ? "Calling…" : "Read-only test"}
                                 </button>
+                                ) : null}
                                 {toolCallFeedback[callKey] ? (
                                   <button
                                     type="button"

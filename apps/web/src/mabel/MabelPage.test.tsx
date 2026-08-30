@@ -3042,3 +3042,23 @@ describe("Mabel Markdown", () => {
     expect(screen.getAllByRole("heading", { name: "Connectors" }).length).toBeGreaterThan(0);
   });
 });
+
+describe("Mabel browser security boundaries", () => {
+  it("does not allow generated HTML scripts or third-party favicon tracking", () => {
+    const artifactSource = fs.readFileSync(
+      path.resolve(__dirname, "components/ArtifactPanel.tsx"),
+      "utf8",
+    );
+    const previewSource = fs.readFileSync(
+      path.resolve(__dirname, "components/MabelFilePreviewPanel.tsx"),
+      "utf8",
+    );
+    const stepSource = fs.readFileSync(
+      path.resolve(__dirname, "components/MessageSteps.tsx"),
+      "utf8",
+    );
+    expect(artifactSource).not.toContain('sandbox="allow-scripts"');
+    expect(previewSource).not.toContain('sandbox="allow-scripts"');
+    expect(stepSource).not.toContain("google.com/s2/favicons");
+  });
+});
