@@ -1,1 +1,2 @@
 I don't like writing READMEs. Seriously, there's a lot going on here and it's still a lot of work in progress, so anything I write today might be stale tomorrow. Moving fast, changing things. So, if you actually want to know how this works, ask me and I'll walk you through the blueprint. Just not trying to leave the whole recipe sitting in a public file.
+Also you can check the other project, niche. https://github.com/batyrrasulov/niche. They are oddly similar to say. I mean this is like a rework of it or niche v2 haha. 
