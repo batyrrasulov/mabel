@@ -6,46 +6,31 @@ It combines a multi-surface web workspace, the OpenAI Agents SDK, governed MCP
 connectors, reusable skills, workflows, projects, files, memory, artifacts,
 schedules, approvals, usage accounting, and operational health in one system.
 
-Mabel is not a thin completion endpoint, a prompt gallery, or a chat window with
-retrieval attached. Its unit of value is a completed piece of work with context,
-tool evidence, durable state, and a place to continue.
+Mabel is not a thin completion endpoint or a chat window with retrieval. Its unit
+of value is a completed piece of work with context, tool evidence, durable state,
+and a place to continue.
 
-```text
-Mabel = context + agent runtime + tools + durable state + workspace UI + controls
+```
+Mabel = identity + context + agent runtime + tools + durable state + workspace UI + controls
 ```
 
-## Why Mabel exists
+## Current status
 
-Models are becoming more capable and more interchangeable. The difficult layer
-is everything required to make those models useful for real work:
+**Not production-ready.** Before deploying to any multi-user or internet-facing environment,
+address the 13 known authorization, policy, and persistence gaps documented in [docs/security.md](docs/security.md).
 
-- assembling the right context without turning retrieved data into instructions
-- connecting tools through explicit, inspectable contracts
-- preserving conversations, files, projects, memory, and outputs
-- turning successful instructions into reusable skills and workflows
-- separating read operations from controlled mutations
-- streaming reasoning summaries, tools, sources, files, and results as one run
-- attributing usage and outcomes to the person and workflow that produced them
+Local development and testing are safe. Multi-user deployments require:
+- explicit hardening of all 13 gaps
+- your own identity provider and OIDC flow
+- removal of development auth modes
+- tenant isolation on every data row
+- reviewed tool policies and connector manifests
 
-Mabel makes people producers of reusable capability:
+See [docs/security.md](docs/security.md) for the complete list of issues and mitigation strategies.
 
-```mermaid
-flowchart LR
-    Prompt[Useful prompt] --> Skill[Reusable skill]
-    Skill --> Workflow[Repeatable workflow]
-    Workflow --> Schedule[Scheduled operation]
-    Workflow --> Artifact[Durable artifact]
-    Artifact --> Evidence[Reviewable evidence]
-    Evidence --> Improvement[Measured improvement]
-    Improvement --> Skill
-```
+## What's implemented
 
-The result is a foundation for research, operations, software delivery, analysis,
-customer work, and any domain where an agent must do more than return text.
-
-## What is implemented
-
-Mabel currently includes:
+Mabel includes:
 
 - streamed multi-turn agent chat
 - OpenAI Agents SDK execution and hosted tools
@@ -56,66 +41,35 @@ Mabel currently includes:
 - explicit long-term memory
 - local retrieval across memory, documents, conversations, and skills
 - MCP tool discovery and invocation
-- connector enablement, readiness, and policy evaluation
+- connector enablement and policy evaluation
 - reusable local and GitHub-backed skills
 - declarative workflows with plans and checkpoints
 - scheduled prompts and due-task execution
 - approval records and decisions
-- usage, cost-estimation hooks, and administrative logs
-- memory and PostgreSQL application stores
+- usage hooks and administrative logs
+- memory or PostgreSQL application store
 - SQLite-backed SDK session history
 - health and normalization diagnostics
 - Docker and local-development workflows
 
-## ⚠️ Security and production readiness
+## Evidence language
 
-**Mabel is not currently production-ready. Before deploying to any multi-user or internet-facing environment, address the 13 known authorization, policy, and persistence gaps documented in [docs/security.md](docs/security.md).**
+To avoid conflating plans with current behavior, this repository uses four levels:
 
-Critical issues that must be fixed:
-
-**Backend authorization (6 issues):**
-- Scheduled task execution allows arbitrary user impersonation
-- Skills, workflows, and documents lack ownership checks
-- RAG search exposes all skill content
-- Approval policy is not enforced (tool calls execute immediately)
-- Connector state is global, not tenant-isolated
-- Browser identity headers are trusted by default
-
-**Frontend safety (3 issues):**
-- Connector test calls can execute write tools without confirmation
-- Generated HTML artifacts execute scripts with network access
-- Favicon requests disclose source domains to Google
-
-**Persistence (2 issues):**
-- Dual state (normalized + JSONB) creates consistency gaps and scaling limits
-- SQLiteSession is not multi-replica safe
-
-**Details, impact, and mitigation strategies are in [docs/security.md](docs/security.md).**
-
-Development and local testing are safe. Multi-user or production deployments require:
-- explicit hardening of all 13 gaps
-- your own identity provider and OIDC flow
-- removal of development auth modes
-- tenant isolation on every data row
-- reviewed tool policies and connector manifests
-
-Evidence language in this repository is deliberate:
-
-- **Implemented**: present in source and covered by a local test or build.
-- **Observed**: exercised against a running local process.
+- **Implemented**: present in current source and covered by test or build.
+- **Observed**: exercised against a running local stack.
 - **Configured**: available when the documented environment is supplied.
 - **Planned**: a product direction, not a current runtime guarantee.
 
 ## System architecture
 
-Mabel is organized as a web application, an API service, an agent runtime, an MCP
-action plane, and three persistence boundaries.
+Mabel is organized as a web application, API service, agent runtime, MCP action plane, and three persistence boundaries.
 
 ```mermaid
 flowchart TB
     Person[User] --> Web[Mabel web workspace]
     Web --> Client[Typed API client]
-    Client --> Edge[/mabel-api same-origin proxy]
+    Client --> Edge["mabel-api same-origin proxy"]
     Edge --> API[FastAPI application]
 
     API --> Runtime[OpenAI Agents SDK runtime]
@@ -143,27 +97,21 @@ flowchart TB
 ### Architectural layers
 
 1. **Experience layer** — React workspace surfaces and run visualization.
-2. **Transport layer** — typed HTTP, multipart uploads, authenticated file access,
-   and Server-Sent Events.
+2. **Transport layer** — typed HTTP, multipart uploads, authenticated file access, and Server-Sent Events.
 3. **Application API** — FastAPI routes grouped by domain.
-4. **Agent runtime** — agent construction, tools, sessions, streaming, sources,
-   generated files, and run state.
-5. **Connector plane** — MCP initialization, tool listing, tool calls, policy,
-   local endpoints, and an optional remote gateway.
+4. **Agent runtime** — agent construction, tools, sessions, streaming, sources, generated files, and run state.
+5. **Connector plane** — MCP initialization, tool listing, tool calls, policy, local endpoints, and an optional remote gateway.
 6. **Knowledge plane** — projects, messages, documents, memory, files, and skills.
-7. **Persistence plane** — memory or PostgreSQL application state, SQLite SDK
-   sessions, and configured file storage.
+7. **Persistence plane** — memory or PostgreSQL application state, SQLite SDK sessions, and configured file storage.
 8. **Operations plane** — health, usage, logs, containers, proxying, and scripts.
 
-## The OpenAI Agents SDK at the center
+## The OpenAI Agents SDK
 
-Mabel delegates the core agent loop to the OpenAI Agents SDK. The runtime uses
+Mabel delegates the core agent loop to the OpenAI Agents SDK. The runtime wraps
 the SDK's `Agent`, `Runner`, `RunConfig`, `ModelSettings`, `SessionSettings`,
-`SQLiteSession`, and `function_tool` abstractions. Depending on configuration, it
-also exposes hosted web search, code interpreter, image generation, file search,
-and hosted MCP tools.
+and `function_tool` abstractions.
 
-The SDK provides the execution grammar:
+The SDK execution loop is:
 
 1. invoke the selected model
 2. inspect its output
@@ -171,7 +119,7 @@ The SDK provides the execution grammar:
 4. return tool results to the model
 5. continue until final output or interruption
 
-Mabel adds the workspace and control system around that loop:
+Mabel adds around this loop:
 
 - user and project context
 - durable conversations and messages
@@ -179,7 +127,7 @@ Mabel adds the workspace and control system around that loop:
 - bounded tool payloads
 - files and generated outputs
 - run, usage, source, and approval records
-- UI events that make the run inspectable while it happens
+- UI events streamed back as the run happens
 
 ```mermaid
 sequenceDiagram
@@ -210,184 +158,38 @@ sequenceDiagram
     API-->>UI: message_done and run_done
 ```
 
-This architecture is more capable than a single LLM call because the model is
-only one participant in a durable execution system. It is also more general than
-RAG: retrieval is one source of context, while tools, state transitions, files,
-skills, schedules, and artifacts produce and preserve work.
-
-## The workspace model
-
-The chat surface remains the center of gravity, but Mabel treats its surrounding
-objects as first-class:
-
-- **Projects** group instructions, conversations, and files.
-- **Memory** stores explicit long-term preferences and facts.
-- **Library** gives uploaded and generated files an account-wide home.
-- **Skills** package reusable operating instructions and connector bindings.
-- **Workflows** package objectives, skills, connectors, commands, and policies.
-- **Artifacts** preserve reports, dashboards, code, and structured outputs.
-- **Schedules** turn prompts into recurring work.
-- **Usage and logs** make execution attributable and inspectable.
-
-```mermaid
-erDiagram
-    USER ||--o{ PROJECT : owns
-    USER ||--o{ CONVERSATION : owns
-    USER ||--o{ RUN : initiates
-    USER ||--o{ DOCUMENT : owns
-    USER ||--o{ MEMORY_ITEM : owns
-    USER ||--o{ FILE : owns
-    USER ||--o{ SCHEDULED_TASK : owns
-
-    PROJECT o|--o{ CONVERSATION : groups
-    PROJECT o|--o{ FILE : groups
-    CONVERSATION ||--o{ MESSAGE : contains
-    CONVERSATION o|--o{ RUN : executes
-    CONVERSATION o|--o{ DOCUMENT : produces
-    CONVERSATION o|--o{ FILE_LINK : references
-    FILE ||--o{ FILE_LINK : linked_by
-    RUN o|--o{ TOOL_CALL : records
-    RUN o|--o| USAGE_EVENT : attributes
-    RUN o|--o{ APPROVAL : requests
-    RUN o|--o{ PROMPT_INBOX_ITEM : receives
-```
-
-### Context flow
-
-Mabel deliberately keeps several forms of memory separate:
-
-```mermaid
-flowchart TD
-    Turn[New user turn] --> Session[SDK conversation session]
-    Turn --> Project[Project instructions and recent project context]
-    Turn --> Explicit[Explicit Mabel memory]
-    Turn --> Attachments[Files and saved documents]
-    Turn --> Skills[Loaded skill instructions]
-    Turn --> Connectors[Connector evidence]
-
-    Session --> Input[Structured runner input]
-    Project --> Input
-    Attachments --> Input
-    Skills --> RuntimeTools[Runtime tools]
-    Explicit --> RuntimeTools
-    Connectors --> RuntimeTools
-    Input --> Agent[OpenAI Agent]
-    RuntimeTools --> Agent
-```
-
-Retrieved text, files, connector results, project notes, and memory are treated as
-user-context data. They are not silently promoted into system instructions.
-
-## MCP and the action plane
-
-MCP gives Mabel a common interface for discovering and invoking tools without
-hardwiring each integration into the model contract.
-
-Implemented MCP operations:
-
-- initialization
-- `tools/list`
-- `tools/call`
-- Streamable HTTP and stdio clients
-- loopback validation for local endpoints
-- optional remote-gateway routing
-- per-user identity context
-- argument-size limits
-- tool-name blocklists
-- ordered allow, ask, and deny policy rules
-- response compaction before model-session persistence
-
-```mermaid
-flowchart LR
-    Agent[Mabel agent] --> Manager[MCP manager]
-    REST[Mabel API caller] --> Manager
-    Manager --> Canonical[Canonical connector slug]
-    Canonical --> Policy[Scope + policy evaluation]
-    Policy -->|deny| Block[Block and audit]
-    Policy -->|allow or approved| Resolve[Resolve transport]
-    Resolve --> Local[Loopback Streamable HTTP]
-    Resolve --> Stdio[Catalog stdio package]
-    Resolve --> Remote[Remote MCP gateway]
-    Local --> Tools[External tools]
-    Stdio --> Tools
-    Remote --> Tools
-    Tools --> Compact[Bound response payload]
-    Compact --> Agent
-```
-
-Local MCP endpoints are configured as JSON:
-
-```bash
-export MABEL_LOCAL_MCP_ENDPOINTS_JSON='{
-  "github": "http://127.0.0.1:9001/mcp",
-  "analytics": "http://127.0.0.1:9002/mcp"
-}'
-```
-
-Mabel rejects non-loopback URLs in the local endpoint registry. Remote endpoints
-belong behind the explicit gateway configuration.
-
-## Chat event contract
-
-The chat endpoint streams normalized JSON events as Server-Sent Events:
-
-- `run_started`
-- `reasoning`
-- `token`
-- `tool_call`
-- `tool_result`
-- `approval_requested`
-- `sources`
-- `usage`
-- `agent_file`
-- `artifact_created`
-- `run_control`
-- `error`
-- `message_done`
-- `run_done`
-
-The web client uses these events to build the answer, activity timeline, sources,
-generated-file chips, artifacts, and terminal state without waiting for the
-entire run to finish.
-
 ## Repository structure
 
-```text
+```
 Mabel/
 ├── apps/
 │   ├── web/                 React + Vite workspace
-│   │   └── src/mabel/       product UI, API client, stream state, tests
+│   │   └── src/mabel/       UI components, API client, stream state, tests
 │   └── api/                 FastAPI package and backend tests
-│       └── mabel_api/       routes, runtime, MCP, stores, models
+│       └── mabel_api/       routes, runtime, MCP, stores, data models
 ├── packages/
 │   ├── catalog/             connector metadata
-│   └── skills/              local reusable skill packages
+│   └── skills/              reusable skill packages
 ├── docs/
 │   ├── api.md               endpoint and event reference
-│   ├── architecture.md      deeper subsystem and data-flow guide
+│   ├── architecture.md      data-flow and subsystem guide
 │   └── security.md          trust boundaries and deployment requirements
 ├── deploy/                  reverse-proxy configuration
-├── scripts/                 local development and verification
-├── compose.yaml             containerized web, API, and PostgreSQL stack
-├── .env.example             configuration contract
+├── scripts/                 development and verification
+├── compose.yaml             containerized stack
+├── .env.example             configuration template
 └── README.md
 ```
 
 ## Quick start
 
-Requirements:
-
-- Node.js 20 or newer
-- Python 3.11 or newer
-- an OpenAI API key for live agent turns
-- PostgreSQL 16 with pgvector for durable mode
-- optional Pandoc and LibreOffice for Office previews
+Requirements: Node.js 20+, Python 3.11+, OpenAI API key.
 
 ### Local memory mode
 
 ```bash
-git clone https://github.com/batyrrasulov/Mabel.git
-cd Mabel
+git clone https://github.com/batyrrasulov/mabel.git
+cd mabel
 cp .env.example .env
 # Add OPENAI_API_KEY to .env
 bash scripts/dev.sh
@@ -395,115 +197,78 @@ bash scripts/dev.sh
 
 Open [http://localhost:5173](http://localhost:5173).
 
-The local default is intentionally simple:
+Default configuration:
 
 - application store: memory
 - agent session store: SQLite
-- identity mode: local development user
+- identity: local development user
 - file storage: `var/`
 
 ### Durable PostgreSQL mode
 
-Set:
-
 ```bash
-MABEL_STORE_MODE=postgres
-MABEL_DB_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
-```
-
-Then initialize and start the API:
-
-```bash
+export MABEL_STORE_MODE=postgres
+export MABEL_DB_URL=postgresql://user:password@localhost:5432/mabel
 .venv/bin/mabel-api init-db
 .venv/bin/mabel-api serve --host 127.0.0.1 --port 8820
 ```
 
 ### Containers
 
-Set `MABEL_POSTGRES_PASSWORD` and `OPENAI_API_KEY`, then run:
-
 ```bash
+export MABEL_POSTGRES_PASSWORD=...
+export OPENAI_API_KEY=...
 docker compose up --build
 ```
 
-The web application is exposed on port `5173` by default.
+Web is on port 5173.
 
 ## Configuration
 
-All environment-specific values are externalized. See `.env.example` for the
-complete local template.
+All environment-specific values are externalized. See `.env.example` for the full template.
 
 ### Service and persistence
 
-- `MABEL_HOST`
-- `MABEL_PORT`
-- `MABEL_STORE_MODE`
-- `MABEL_DB_URL`
-- `MABEL_NORMALIZED_STRICT_READS`
-- `MABEL_SESSION_DB_PATH`
-- `MABEL_UPLOADS_DIR`
-- `MABEL_UPLOADS_MAX_BYTES`
+- `MABEL_HOST`, `MABEL_PORT`
+- `MABEL_STORE_MODE`, `MABEL_DB_URL`
+- `MABEL_SESSION_DB_PATH`, `MABEL_UPLOADS_DIR`, `MABEL_UPLOADS_MAX_BYTES`
 
 ### OpenAI runtime
 
 - `OPENAI_API_KEY` or `MABEL_OPENAI_API_KEY`
 - `MABEL_OPENAI_MODEL`
-- `MABEL_OPENAI_AGENTS_ENABLED`
-- `MABEL_OPENAI_WEB_SEARCH_ENABLED`
-- `MABEL_OPENAI_CODE_INTERPRETER_ENABLED`
-- `MABEL_OPENAI_IMAGE_GENERATION_ENABLED`
-- `MABEL_OPENAI_FILE_SEARCH_ENABLED`
-- `MABEL_OPENAI_VECTOR_STORE_IDS_JSON`
+- `MABEL_OPENAI_AGENTS_ENABLED`, `MABEL_OPENAI_WEB_SEARCH_ENABLED`, `MABEL_OPENAI_CODE_INTERPRETER_ENABLED`, `MABEL_OPENAI_IMAGE_GENERATION_ENABLED`, `MABEL_OPENAI_FILE_SEARCH_ENABLED`
 - `MABEL_OPENAI_SESSION_HISTORY_LIMIT`
-- `MABEL_TRACE_INCLUDE_SENSITIVE_DATA`
 
 ### Identity
 
-- `MABEL_AUTH_MODE=development` for local work
-- `MABEL_AUTH_MODE=trusted_headers` behind an identity-aware reverse proxy
-- `MABEL_DEV_USER_EMAIL`
-- `MABEL_DEV_USER_ID`
-- `MABEL_DEV_USER_NAME`
+- `MABEL_AUTH_MODE=development` (local work only)
+- `MABEL_AUTH_MODE=trusted_headers` (behind identity-aware proxy)
+- `MABEL_DEV_USER_EMAIL`, `MABEL_DEV_USER_ID`, `MABEL_DEV_USER_NAME`
 
-In `trusted_headers` mode, the proxy must remove caller-supplied identity headers
-and inject verified `X-User-Email`, `X-User-Id`, `X-User-Name`, and
-`X-User-Groups` values.
+In `trusted_headers` mode, the proxy must remove all caller-supplied identity headers
+and inject verified `X-User-Email`, `X-User-Id`, `X-User-Name`, and `X-User-Groups`.
 
 ### MCP
 
-- `MABEL_LOCAL_MCP_ENDPOINTS_JSON`
-- `MABEL_LOCAL_MCP_ENDPOINT_<SLUG>`
-- `MABEL_MCP_GATEWAY_PROXY_BASE_URL`
-- `MABEL_MCP_GATEWAY_PROFILE`
-- `MABEL_REMOTE_GATEWAY_API_BASE_URL`
-- `MABEL_REMOTE_GATEWAY_ORG`
-- `MABEL_REMOTE_GATEWAY_RUNTIME_TOKEN`
-- `MABEL_MCP_TOOL_TIMEOUT_SECONDS`
-- `MABEL_MCP_TOOL_ARGS_MAX_BYTES`
-- `MABEL_MCP_TOOL_RESULT_MAX_CHARS`
-- `MABEL_MCP_TOOL_POLICY_RULES_JSON`
-- `MABEL_MCP_TOOL_BLOCKLIST_JSON`
+- `MABEL_LOCAL_MCP_ENDPOINTS_JSON` or `MABEL_LOCAL_MCP_ENDPOINT_<SLUG>`
+- `MABEL_MCP_GATEWAY_PROXY_BASE_URL`, `MABEL_MCP_GATEWAY_PROFILE`
+- `MABEL_MCP_TOOL_TIMEOUT_SECONDS`, `MABEL_MCP_TOOL_ARGS_MAX_BYTES`, `MABEL_MCP_TOOL_RESULT_MAX_CHARS`
+- `MABEL_MCP_TOOL_POLICY_RULES_JSON`, `MABEL_MCP_TOOL_BLOCKLIST_JSON`
+
+Local MCP endpoints must be loopback addresses. Remote endpoints belong behind an explicit gateway.
 
 ### Skills registry
 
-- `MABEL_SKILLS_GITHUB_REPO`
-- `MABEL_SKILLS_GITHUB_REF`
-- `MABEL_SKILLS_GITHUB_BASE_PATH`
-- `MABEL_SKILLS_GITHUB_TOKEN`
+- `MABEL_SKILLS_GITHUB_REPO`, `MABEL_SKILLS_GITHUB_REF`, `MABEL_SKILLS_GITHUB_BASE_PATH`, `MABEL_SKILLS_GITHUB_TOKEN`
 
 ## API
 
-The service exposes:
-
-- OpenAPI JSON at `/openapi.json`
-- Swagger UI at `/docs`
-- ReDoc at `/redoc`
-- shallow health at `/healthz`
-- deep health at `/api/v1/health/deep`
+OpenAPI reference at `/openapi.json`, Swagger UI at `/docs`.
 
 Major API domains:
 
-```text
+```
 /api/v1/bootstrap
 /api/v1/chat
 /api/v1/conversations
@@ -524,30 +289,29 @@ Major API domains:
 /api/v1/admin
 ```
 
-See [docs/api.md](docs/api.md) for endpoint behavior, payloads, side effects,
-stream events, and status codes.
+See [docs/api.md](docs/api.md) for endpoint behavior and payloads.
 
 ## Data and persistence
 
-Mabel uses three separate storage concerns:
+Mabel uses three storage concerns:
 
-1. **Application state** — memory for tests/development or PostgreSQL for
-   durable projects, conversations, messages, runs, tools, approvals, skills,
-   documents, memory, and usage.
+1. **Application state** — memory (tests/dev) or PostgreSQL (durable).
 2. **Agent session history** — SQLite through the OpenAI Agents SDK.
 3. **File bytes** — configured local storage with optional OpenAI Files mirroring.
 
-The PostgreSQL implementation retains a compatibility state document alongside
-normalized tables. Strict normalized reads are opt-in while the normalization
-health endpoint reports readiness.
+The PostgreSQL implementation includes a compatibility-state document alongside normalized tables.
+Strict normalized reads are opt-in.
 
-This split is suitable for a single-node foundation. Horizontal production scale
-requires shared session storage, object storage, transactional normalized
-repositories, distributed schedule claims, and idempotent tool execution.
+This is suitable for single-node foundation. Horizontal production scale requires:
+- shared session storage
+- object storage
+- transactional normalized repositories
+- distributed schedule claims
+- idempotent tool execution
 
 ## Security model
 
-Mabel's important trust boundaries are:
+Important trust boundaries:
 
 - browser to identity-aware edge
 - edge to API
@@ -556,30 +320,27 @@ Mabel's important trust boundaries are:
 - agent runtime to MCP connector
 - connector to external source system
 
-Security defaults and requirements:
+Security defaults:
 
-- secrets are environment-driven and excluded from Git
+- secrets are environment-driven
 - local MCP endpoints must be loopback addresses
 - tool arguments and model-session payloads are bounded
 - sensitive provider tracing is disabled by default
 - artifact and Markdown rendering use sanitization or browser sandboxing
-- data access is owner-scoped in application routes
+- data access is owner-scoped in routes
 - development identity mode must not be exposed publicly
 - trusted-header identity requires a proxy that strips unverified headers
-- connector policy allows reads, requires approval for create/update, and denies
-  delete/admin/unknown operations by default
+- connector policy allows reads, requires approval for create/update, denies delete/admin/unknown by default
 
 See [docs/security.md](docs/security.md) before any internet-facing deployment.
 
 ## Verification
 
-Run the full local gate:
-
 ```bash
 bash scripts/verify.sh
 ```
 
-Individual commands:
+Individual checks:
 
 ```bash
 npm run typecheck
@@ -589,68 +350,44 @@ npm run build
 npm audit --omit=dev
 ```
 
-Current local evidence:
+Current local status:
 
 - API: 111 passing tests
-- web: 51 passing tests
-- TypeScript: strict no-emit check passes
-- production web bundle: builds successfully
-- production npm dependency audit: zero known vulnerabilities
+- Web: 51 passing tests
+- TypeScript: strict no-emit passes
+- Production bundle: builds successfully
+- npm audit: zero known vulnerabilities
 
-These checks prove the local source contract. They do not prove a specific cloud
-deployment, external connector entitlement, model-provider quota, or production
-service-level objective.
+These verify the local source contract. They do not prove cloud deployment,
+external connector entitlement, model-provider quota, or production SLO.
 
 ## Current boundaries
 
-Mabel is a working platform foundation, not a finished multi-tenant control
-plane. Important boundaries remain:
+Mabel is a working foundation, not a finished multi-tenant control plane:
 
 - development identity is not production authentication
-- approval records and every tool execution path are not yet one durable state
-  machine
-- workflows are strongest as plans and checkpoints; arbitrary workflow packages
-  are not yet a fully distributed execution engine
-- run resume and steering persistence is broader than live execution support
+- approval records and tool execution paths are not yet one durable state machine
+- workflows are strongest as plans and checkpoints
+- run resume and steering is broader than live execution support
 - local files and SQLite sessions constrain horizontal scale
-- PostgreSQL still includes compatibility-state writes
+- PostgreSQL includes compatibility-state writes
 - schedules need atomic distributed claims for multi-worker deployment
-- deletion is not yet an orchestrated erasure across all stores and providers
-- deep health reports configuration readiness more than live upstream success
+- deletion is not yet orchestrated across all stores and providers
+- deep health reports configuration readiness more than upstream success
 
-These are engineering constraints, not hidden product claims. The architecture is
-designed so each can be replaced behind a clear boundary.
+Each constraint is an engineering boundary, not a hidden product claim.
+The architecture is designed so each can be replaced.
 
-## Strategic direction
+## Future direction
 
 Mabel can become the layer through which people and agents produce repeatable,
 reviewable work:
 
-- **Open workspace** — chat, projects, files, memory, artifacts, and local skills
-- **Developer platform** — API, MCP gateway, connector contracts, and client SDKs
-- **Workflow platform** — durable plans, checkpoints, schedules, and outcomes
-- **Control plane** — tenant identity, policy, approvals, audit, and retention
-- **Ecosystem** — community skills, connectors, workflow packs, and renderers
+- **Open workspace** — chat, projects, files, memory, artifacts, local skills
+- **Developer platform** — API, MCP gateway, connector contracts, client SDKs
+- **Workflow platform** — durable plans, checkpoints, schedules, outcomes
+- **Control plane** — tenant identity, policy, approvals, audit, retention
+- **Ecosystem** — community skills, connectors, workflow packs, renderers
 
-The defensible value is not a list of AI features. It is the evaluated operating
-system formed by context, methods, reliable tools, policy, evidence, and outcome
-telemetry.
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a change. Contributions
-should preserve:
-
-- exact `Mabel` product naming
-- environment-driven configuration
-- same-origin browser API paths
-- explicit identity and ownership boundaries
-- test coverage for behavior changes
-- evidence-backed product claims
-- small, reviewable commits
-
-## License and release status
-
-This repository is in pre-release preparation. No open-source license is granted
-until a `LICENSE` file is intentionally selected and added by the rights holder.
-Do not redistribute the source before that release gate is complete.
+The defensible value is not a feature checklist. It is the operating system formed
+by context, methods, reliable tools, policy, evidence, and outcome telemetry.
