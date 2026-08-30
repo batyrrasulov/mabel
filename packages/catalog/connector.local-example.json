@@ -1,0 +1,13 @@
+{
+  "id": "connector.local-example",
+  "type": "connector",
+  "name": "Local Example",
+  "version": "0.1.0",
+  "lifecycle": {
+    "status": "published"
+  },
+  "mcp": {
+    "transport": "streamable_http",
+    "endpoint": "${MABEL_LOCAL_EXAMPLE_MCP_URL}"
+  }
+}

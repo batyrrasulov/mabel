@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "entries": [
+    {
+      "id": "connector.local-example",
+      "type": "connector",
+      "path": "connector.local-example.json"
+    }
+  ]
+}

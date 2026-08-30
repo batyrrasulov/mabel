@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mabel-api"
+version = "0.1.0"
+description = "Mabel OpenAI Agents gateway API"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<0.116",
+  "uvicorn>=0.31,<0.47",
+  "psycopg[binary]>=3.2,<3.3",
+  "httpx>=0.28,<0.29",
+  "mcp>=1.12,<2.0",
+  "python-multipart>=0.0.20,<1.0",
+  "pydantic>=2.8,<3.0",
+  "openai>=2.25.0",
+  "openai-agents>=0.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+]
+
+[project.scripts]
+mabel-api = "mabel_api.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mabel_api*"]

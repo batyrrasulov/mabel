@@ -1,0 +1,21 @@
+{
+  "id": "skill.research-brief",
+  "type": "skill",
+  "name": "Research Brief",
+  "version": "0.1.0",
+  "description": "Produce a concise, source-backed research brief.",
+  "owner": {
+    "primary_team": "mabel"
+  },
+  "lifecycle": {
+    "status": "published"
+  },
+  "entrypoints": {
+    "instruction_file": "SKILL.md"
+  },
+  "dependencies": [],
+  "tags": ["research", "brief", "sources"],
+  "source": {
+    "type": "local"
+  }
+}

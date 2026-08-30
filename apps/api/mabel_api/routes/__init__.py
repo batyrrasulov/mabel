@@ -1,0 +1,2 @@
+"""Mabel route registration."""
+
